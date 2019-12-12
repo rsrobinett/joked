@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Joked</name>
+    </assembly>
+    <members>
+        <!-- Badly formed XML comment ignored for member "M:Joked.Controllers.CuratedController.GetCuratedJokes(System.String)" -->
+    </members>
+</doc>
