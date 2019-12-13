@@ -63,7 +63,7 @@ namespace Joked.Test.Controllers
 		public void ShouldGroupWithAnyReasonableTerm(string term)
 		{
 			GivenSearchTerm(term);
-			GivenJokes(ShortJoke,MediumJoke, LongJoke);
+			GivenJokes(_shortJoke,_mediumJoke, _longJoke);
 			WhenJokesAreCurated();
 			ThenCuratedJokesArGroupedAsExpected(1, 1, 1);
 		}
@@ -76,16 +76,19 @@ namespace Joked.Test.Controllers
 		[TestCase("Hello", "hello", "<tag>", "</tag>", "<tag>Hello</tag>")]
 		[TestCase("hello", "Hello", "<tag>", "</tag>", "<tag>hello</tag>")]
 		[TestCase("1 2 3 4", "2", "*", "*", "1 *2* 3 4")]
-		[TestCase("Hello today is a good day to say hello!", "hello", "*", "*", "*Hello* today is a good day to say *hello*!")]
+		[TestCase("Hello today is a good day to say hello!", "hello", "*", "*", "*Hello* today is a good day to say *hello!*")]
 		[TestCase("Well hello there.","Hello","*","*", "Well *hello* there.")]
 		[TestCase("What a wonderful day.", "a", "*", "*", "What *a* wonderful day.")]
-		[TestCase("Everything is a-okay.", "a", "*", "*", "Everything is a-okay.")]
+		[TestCase("I'm Okay, I say.", "I", "*", "*", "I'm Okay, *I* say.")]
+		[TestCase("I'm Okay, I say.", "I'm", "*", "*", "*I'm* Okay, I say.")]
+		[TestCase("www.degreed.com degreed.", "degreed", "*", "*", "www.degreed.com *degreed*.")]
+		[TestCase("I enjoy a good pick-me-up first thing in the morning", "me", "*", "*", "I enjoy a good pick-me-up first thing in the morning")]
+
 		public void ShouldEmphasizeSearchTerm(string givenJoke, string givenTerm, string beginEmph, string endEmph, string expectedEmphasizedJoke)
 		{
 			GivenSearchTerm(givenTerm);
 			WhenEmphasizeTermsCalled(givenJoke, givenTerm, beginEmph, endEmph);
 			ThenExpectedStringIsReturned(expectedEmphasizedJoke);
-
 		}
 
 		private void ThenExpectedStringIsReturned(string expectedEmphasizedJoke)
@@ -126,17 +129,6 @@ namespace Joked.Test.Controllers
 			_givenJokes.AddRange(jokes.ToList());
 		}
 
-
-		//private void GivenJokes(params JokeIncoming[] jokes)
-		//{
-		//	//_givenJokes = jokes;
-		//}
-
-		//private void GivenJokes(string jokesJson)
-		//{
-		//	_givenJokes = JsonSerializer.Deserialize<JokeIncoming[]>(jokesJson);
-		//}
-
 		private void GivenNullJokes()
 		{
 			_givenJokes = null;
@@ -162,21 +154,7 @@ namespace Joked.Test.Controllers
 			new object[] {0, 0, 1, new[] {JokeLength21}},
 			new object[] {2, 3, 2, new[] { JokeLength1, JokeLength9, JokeLength10, JokeLength11, JokeLength19, JokeLength20, JokeLength21 } },
 		};
-		//private static object[] _jokeGroupingTestCases2 =
-		//{
 
-		//	//new object[] {1, 0, 0, jokeilength1 },
-		//	new object[] {1, 0, 0, new JokeIncoming {Text=JokeLength1}},
-		//	new object[] {1, 0, 0, new JokeIncoming {Text=JokeLength9}},
-		//	new object[] {0, 1, 0, new JokeIncoming {Text=JokeLength10}},
-		//	new object[] {0, 1, 0, new JokeIncoming {Text=JokeLength11}},
-		//	new object[] {0, 1, 0, new JokeIncoming {Text=JokeLength19}},
-		//	new object[] {0, 0, 1, new JokeIncoming {Text=JokeLength20}},
-		//	new object[] {0, 0, 1, new JokeIncoming {Text=JokeLength21}}
-		//	//new object[] {2, 3, 2, new JokeIncoming[] { JokeLength1, JokeLength9, JokeLength10, JokeLength11, JokeLength19, JokeLength20, JokeLength21 } },
-		//};						   
-
-		//private static JokeIncoming jokeilength1 = new JokeIncoming{Text = "one"};
 		private const string JokeLength21 =
 			"one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twenty1";
 		private const string JokeLength20 =
@@ -188,9 +166,10 @@ namespace Joked.Test.Controllers
 		private const string JokeLength10 = "one two three four five six seven eight nine ten";
 		private const string JokeLength9 = "one two three four five six seven eight nine";
 		private const string JokeLength1 = "one";
-		private JokeIncoming ShortJoke = new JokeIncoming{Text = JokeLength9};
-		private JokeIncoming MediumJoke = new JokeIncoming { Text = JokeLength11 };
-		private JokeIncoming LongJoke = new JokeIncoming { Text =JokeLength21 };
+		
+		private readonly JokeIncoming _shortJoke = new JokeIncoming{Text = JokeLength9};
+		private readonly JokeIncoming _mediumJoke = new JokeIncoming { Text = JokeLength11 };
+		private readonly JokeIncoming _longJoke = new JokeIncoming { Text =JokeLength21 };
 
 		
 		//const string NewLineCharJokes = new JokeIncoming { Text = "Why did Mozart kill all his chickens?\r\nBecause when he asked them who the best composer was, they'd all say \"Bach bach bach!\"\r\n" };
