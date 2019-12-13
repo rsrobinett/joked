@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using FluentAssertions.Execution;
 using Joked.Controllers;
 using Joked.Model;
 using Microsoft.Extensions.Logging;
@@ -43,16 +42,7 @@ namespace Joked.Test.Controllers
 			WhenJokesAreCurated();
 			ThenCuratedJokesArGroupedAsExpected(expectdShortJokeCount, expextedMediumJokeCount, expectedLongJokeCount);
 		}
-
-		//[Test]
-		//[TestCaseSource(nameof(_jokeGroupingTestCases2))]
-		//public void ShouldCurateJokesShouldGroupList2(int expectdShortJokeCount, int expextedMediumJokeCount, int expectedLongJokeCount, params JokeIncoming[] jokesText)
-		//{
-		//	GivenJokes(jokesText);
-		//	WhenJokesAreCurated();
-		//	ThenCuratedJokesArGroupedAsExpected(expectdShortJokeCount, expextedMediumJokeCount, expectedLongJokeCount);
-		//}
-
+		
 		[Test]
 		[TestCase(" ")]
 		[TestCase("*")]
@@ -69,7 +59,7 @@ namespace Joked.Test.Controllers
 		}
 
 		[Test]
-		[TestCase("hello","hello","*","*","*hello*")]
+		[TestCase("hello", "hello", "*", "*", "*hello*")]
 		[TestCase("Hello", "hello", "*", "*", "*Hello*")]
 		[TestCase("hello", "Hello", "*", "*", "*hello*")]
 		[TestCase("hello", "hello", "<tag>", "</tag>", "<tag>hello</tag>")]
@@ -77,13 +67,17 @@ namespace Joked.Test.Controllers
 		[TestCase("hello", "Hello", "<tag>", "</tag>", "<tag>hello</tag>")]
 		[TestCase("1 2 3 4", "2", "*", "*", "1 *2* 3 4")]
 		[TestCase("Hello today is a good day to say hello!", "hello", "*", "*", "*Hello* today is a good day to say *hello!*")]
-		[TestCase("Well hello there.","Hello","*","*", "Well *hello* there.")]
+		[TestCase("Well hello there.", "Hello", "*", "*", "Well *hello* there.")]
 		[TestCase("What a wonderful day.", "a", "*", "*", "What *a* wonderful day.")]
 		[TestCase("I'm Okay, I say.", "I", "*", "*", "I'm Okay, *I* say.")]
 		[TestCase("I'm Okay, I say.", "I'm", "*", "*", "*I'm* Okay, I say.")]
-		[TestCase("www.degreed.com degreed.", "degreed", "*", "*", "www.degreed.com *degreed*.")]
-		[TestCase("I enjoy a good pick-me-up first thing in the morning", "me", "*", "*", "I enjoy a good pick-me-up first thing in the morning")]
-
+		[TestCase("www.degreed.com degreed.", "degreed", "*", "*", "www.degreed.com *degreed.*")]
+		[TestCase("Me enjoy a good pick-me-up first thing in the morning", "me", "*", "*", "*Me* enjoy a good pick-me-up first thing in the morning")]
+		[TestCase("Hello", "hello hel llo", "*", "*", "*Hello*")]
+		[TestCase("Hello", "llo", "*", "*", "*Hello*")]
+		[TestCase("Hello", "Hel", "*", "*", "*Hello*")]
+		[TestCase("Hello", "ello", "*", "*", "Hello")]
+		[TestCase("Hello my name is", "nam is llo m hello", "*", "*", "*Hello* my *name* *is*")]
 		public void ShouldEmphasizeSearchTerm(string givenJoke, string givenTerm, string beginEmph, string endEmph, string expectedEmphasizedJoke)
 		{
 			GivenSearchTerm(givenTerm);

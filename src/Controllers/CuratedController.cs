@@ -39,6 +39,10 @@ namespace Joked.Controllers
 		[HttpGet("{searchTerm}")]
 		public IActionResult GetCuratedJokes(string searchTerm)
 		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest();
+			}
 			if (string.IsNullOrWhiteSpace(searchTerm))
 			{
 				var errorMessage = "The searchTerm cannot be empty or whitespace";
@@ -46,7 +50,7 @@ namespace Joked.Controllers
 
 				return BadRequest(errorMessage);
 			}
-
+			
 			var result = _httpClient.Get($"search?limit=30&term={searchTerm}").Result.Replace(@"\r\n", " ");
 			var jokes = JsonSerializer.Deserialize<JokesIncoming>(result);
 

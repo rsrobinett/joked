@@ -50,6 +50,7 @@ namespace Joked.Services
 		private void DisplayRandomJoke(string joke)
 		{
 			_logger.Log(LogLevel.Critical, joke);
+			//Socket.ConnectAsync(SocketType.Stream, )
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken)

@@ -56,9 +56,9 @@ namespace Joked.Controllers
 			//search algorithm works like this
 			//1 or 2 letters only full words ie (I, a, ah, we)
 			//3+ beginning or end (no middle of word)
-			//multiple terms are junctions (and)
+			//if multiple terms, all are searched for individually
 
-			//choosing to emphasize full words
+			//choosing to emphasize full words (includes quotation attached to a word).  
 
 			var termList = term.Split(' ').OrderByDescending(x => x.Length).ToList();
 			var splitJoke = jokeText.Split(' ');
@@ -73,21 +73,22 @@ namespace Joked.Controllers
 						if (s.Equals( t, StringComparison.CurrentCultureIgnoreCase))
 						{
 							emphasizedString.Add(beginEmphasis + s + endEmphasis);
+							break;
 						}
 
 						emphasizedString.Add(s);
-						continue;
+						break;
 					}
 
 					if (s.StartsWith(t, StringComparison.CurrentCultureIgnoreCase))
 					{
 						emphasizedString.Add(beginEmphasis + s + endEmphasis);
-						continue;
+						break;
 					}
 					if (s.EndsWith(t, StringComparison.CurrentCultureIgnoreCase))
 					{
 						emphasizedString.Add(beginEmphasis + s + endEmphasis);
-						continue;
+						break;
 					}
 
 					emphasizedString.Add(s);
