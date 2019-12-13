@@ -4,6 +4,16 @@
         <name>Joked</name>
     </assembly>
     <members>
-        <!-- Badly formed XML comment ignored for member "M:Joked.Controllers.CuratedController.GetCuratedJokes(System.String)" -->
+        <member name="M:Joked.Controllers.CuratedController.GetCuratedJokes(System.String)">
+            <summary>
+            Display curated list of jokes for a search term
+            </summary>
+            <remarks>
+            Accept a search term and display the first 30 jokes containing that term,
+            with the matching term emphasized in some way (upper, bold, color, etc.)
+            and the matching jokes grouped by length: short  <![CDATA[ (<10 words), medium (<20 words), long (<= 20 words) ]]>
+            https://icanhazdadjoke.com/api
+            </remarks>
+        </member>
     </members>
 </doc>

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Data.Common;
 using System.Text.Json.Serialization;
 
 namespace Joked.Model
@@ -23,8 +22,15 @@ namespace Joked.Model
 	
 	public class CuratedJokes
 	{
-		public List<string> ShortJokes { get; set; }
-		public List<string> MediumJokes { get; set; }
-		public List<string> LongJokes { get; set; }
+		public List<string> Short { get; set; }
+		public List<string> Medium { get; set; }
+		public List<string> Long { get; set; }
+
+		public CuratedJokes()
+		{
+			Short = new List<string>();
+			Medium = new List<string>();
+			Long = new List<string>();
+		}
 	}
 }

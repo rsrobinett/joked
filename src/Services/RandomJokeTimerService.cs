@@ -5,20 +5,23 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-
+using Microsoft.Extensions.Logging;
 
 namespace Joked.Services
 {
 	public class RandomJokeTimerService : IHostedService, IDisposable
 	{
 		private Timer _timer;
-		private const int TimerFrequencySeconds = 1000;
+		private const int TimerFrequencySeconds = 10;
 		private const string FallbackJoke = "Why did the chicken cross the street? To get to the other side.";
 
 		private readonly IJokeHttpClient _httpClient;
-		public RandomJokeTimerService(IJokeHttpClient client)
+		private readonly ILogger<RandomJokeTimerService> _logger;
+
+		public RandomJokeTimerService(IJokeHttpClient client, ILogger<RandomJokeTimerService> logger)
 		{
 			_httpClient = client;
+			_logger = logger;
 		}
 
 		public Task StartAsync(CancellationToken cancellationToken)
@@ -32,11 +35,11 @@ namespace Joked.Services
 		{
 			if (cancellationToken.IsCancellationRequested) return;
 
-			var result = GetRandomJoke().Result;
+			var result = GetRandomJoke().Result.Replace(@"\r\n", " ");
 
 			var joke = JsonSerializer.Deserialize<JokeIncoming>(result) as IJoke;
 
-			DisplayRandomJoke(joke?.Text);
+			DisplayRandomJoke(HttpUtility.UrlDecode(joke?.Text ?? FallbackJoke));
 		}
 
 		private async Task<string> GetRandomJoke()
@@ -44,10 +47,9 @@ namespace Joked.Services
 			return await _httpClient.Get("/");
 		}
 
-		private void DisplayRandomJoke(string text)
+		private void DisplayRandomJoke(string joke)
 		{
-			var joke = HttpUtility.UrlDecode(text ?? FallbackJoke);
-			Console.WriteLine(joke);
+			_logger.Log(LogLevel.Critical, joke);
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken)
