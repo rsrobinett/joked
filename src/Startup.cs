@@ -13,8 +13,7 @@ namespace Joked
 {
 	public class Startup
 	{
-
-		private string name = "Joked";
+	private string name = "Joked";
 
 		public Startup(IConfiguration configuration)
 		{
@@ -26,6 +25,17 @@ namespace Joked
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
+			services.AddCors(options =>
+			{
+				options.AddPolicy("CorsPolicy", builder => builder
+					.WithOrigins("http://localhost:4200")
+					.AllowAnyMethod()
+					.AllowAnyHeader()
+					.AllowCredentials());
+			});
+			
+			services.AddSignalR();
+
 			services.AddHttpContextAccessor();
 
 			services.AddHttpClient<IJokeHttpClient, JokeHttpClient>();
@@ -67,9 +77,15 @@ namespace Joked
 
 			app.UseRouting();
 
+			app.UseCors("CorsPolicy");
+
 			//app.UseAuthorization();
 
-			app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+			app.UseEndpoints(endpoints =>
+			{
+				endpoints.MapControllers();
+				endpoints.MapHub<JokeHub>("api/jokes/random");
+			});
 		}
 	}
 }

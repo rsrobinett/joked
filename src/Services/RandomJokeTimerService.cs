@@ -31,7 +31,7 @@ namespace Joked.Services
 			return Task.CompletedTask;
 		}
 
-		private void RandomJokeTask(object state, CancellationToken cancellationToken)
+		public void RandomJokeTask(object state, CancellationToken cancellationToken = default)
 		{
 			if (cancellationToken.IsCancellationRequested) return;
 
@@ -42,7 +42,7 @@ namespace Joked.Services
 			DisplayRandomJoke(HttpUtility.UrlDecode(joke?.Text ?? FallbackJoke));
 		}
 
-		private async Task<string> GetRandomJoke()
+		public async Task<string> GetRandomJoke()
 		{
 			return await _httpClient.Get("/");
 		}
@@ -51,6 +51,7 @@ namespace Joked.Services
 		{
 			_logger.Log(LogLevel.Critical, joke);
 			//Socket.ConnectAsync(SocketType.Stream, )
+			//_hub.Clients.All.SendAsync()
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken)

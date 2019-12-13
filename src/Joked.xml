@@ -4,7 +4,7 @@
         <name>Joked</name>
     </assembly>
     <members>
-        <member name="M:Joked.Controllers.CuratedController.GetCuratedJokes(System.String)">
+        <member name="M:Joked.Controllers.JokesController.GetCuratedJokes(System.String)">
             <summary>
             Display curated list of jokes for a search term
             </summary>

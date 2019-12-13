@@ -21,7 +21,6 @@ namespace Joked.Model
 	public class Joke : IJoke
 	{
 		public string Text { get; set; }
-		//public JokeMetaData MetaData { get; set; }
 	}
 
 	//public class JokeMetaData
