@@ -78,8 +78,9 @@ namespace Joked.Test.Controllers
 		[TestCase("Hello", "hello hel llo", "*", "*", "*Hello*")]
 		[TestCase("Hello", "llo", "*", "*", "*Hello*")]
 		[TestCase("Hello", "Hel", "*", "*", "*Hello*")]
-		[TestCase("Hello", "ello", "*", "*", "Hello")]
+		[TestCase("Hello", "ello", "*", "*", "*Hello*")]
 		[TestCase("Hello my name is", "nam is llo m hello", "*", "*", "*Hello* my *name* *is*")]
+		[TestCase("Hello my name is", "", "*", "*", "Hello my name is")]
 		public void ShouldEmphasizeSearchTerm(string givenJoke, string givenTerm, string beginEmph, string endEmph, string expectedEmphasizedJoke)
 		{
 			GivenSearchTerm(givenTerm);
@@ -94,7 +95,7 @@ namespace Joked.Test.Controllers
 
 		private void WhenEmphasizeTermsCalled(string jokeText, string term, string beginEmphasis, string endEmphasis)
 		{
-			_thenEmphasizedTerm = _curatedHandler.EmphasizeTerm(jokeText, term, beginEmphasis, endEmphasis);
+			_thenEmphasizedTerm = _curatedHandler.Emphasize(jokeText, term, beginEmphasis, endEmphasis);
 		}
 
 		private void GivenSearchTerm(string term)

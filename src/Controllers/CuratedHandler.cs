@@ -37,9 +37,9 @@ namespace Joked.Controllers
 
 			var curatedJokes = new CuratedJokes
 			{
-				Short = jokesText?.Where(x => LengthOfJoke(x) < MediumJokeMinLength).Select(x=>EmphasizeTerm(x,term)).ToList(),
-				Medium = jokesText?.Where(x => LengthOfJoke(x) >= MediumJokeMinLength && LengthOfJoke(x) < LongJokeMinLength).Select(x => EmphasizeTerm(x, term)).ToList(),
-				Long = jokesText?.Where(x => LengthOfJoke(x) >= LongJokeMinLength).Select(x => EmphasizeTerm(x, term)).ToList()
+				Short = jokesText?.Where(x => LengthOfJoke(x) < MediumJokeMinLength).Select(x=>Emphasize(x,term)).ToList(),
+				Medium = jokesText?.Where(x => LengthOfJoke(x) >= MediumJokeMinLength && LengthOfJoke(x) < LongJokeMinLength).Select(x => Emphasize(x, term)).ToList(),
+				Long = jokesText?.Where(x => LengthOfJoke(x) >= LongJokeMinLength).Select(x => Emphasize(x, term)).ToList()
 			};
 			return curatedJokes;
 		}
@@ -50,51 +50,68 @@ namespace Joked.Controllers
 			return Regex.Split(phrase??"", regexSplitExpression).Length;
 		}
 
-		internal string EmphasizeTerm(string jokeText, string term,string beginEmphasis = BeginEmphasis, string endEmphasis = EndEmphasis )
+		internal string Emphasize(string jokeText, string term,string beginEmphasis = BeginEmphasis, string endEmphasis = EndEmphasis )
 		{
 			//search algorithm works like this
 			//1 or 2 letters only full words ie (I, a, ah, we)
 			//3+ beginning or end (no middle of word)
 			//if multiple terms, all are searched for individually
 
-			//choosing to emphasize full words (includes quotation attached to a word).  
+			if (string.IsNullOrWhiteSpace(term))
+			{
+				return jokeText;
+			}
 
-			var termList = term.Split(' ').OrderByDescending(x => x.Length).ToList();
-			var splitJoke = jokeText.Split(' ');
+			//choosing to emphasize full words (includes quotation attached to a word).  
+			var termList = term.Split().OrderByDescending(x => x.Length).ToList();
+			var splitJoke = jokeText.Split();
 			var emphasizedString = new List<string>();
 
-			foreach (var s in splitJoke)
+			foreach (var word in splitJoke)
 			{
-				foreach (var t in termList)
-				{
-					if (t.Length < 3)
-					{
-						if (s.Equals( t, StringComparison.CurrentCultureIgnoreCase))
-						{
-							emphasizedString.Add(beginEmphasis + s + endEmphasis);
-							break;
-						}
-
-						emphasizedString.Add(s);
-						break;
-					}
-
-					if (s.StartsWith(t, StringComparison.CurrentCultureIgnoreCase))
-					{
-						emphasizedString.Add(beginEmphasis + s + endEmphasis);
-						break;
-					}
-					if (s.EndsWith(t, StringComparison.CurrentCultureIgnoreCase))
-					{
-						emphasizedString.Add(beginEmphasis + s + endEmphasis);
-						break;
-					}
-
-					emphasizedString.Add(s);
-				}
+				EmphasizeWord(beginEmphasis, endEmphasis, termList, word, emphasizedString);
 			}
 
 			return string.Join(" ", emphasizedString);
+		}
+
+		private static void EmphasizeWord(string beginEmphasis, string endEmphasis, IEnumerable<string> termList, string word,
+			ICollection<string> emphasizedString)
+		{
+			foreach (var t in termList)
+			{
+				if (t.Length < 3)
+				{
+					if (word.Equals(t, StringComparison.CurrentCultureIgnoreCase))
+					{
+						emphasizedString.Add(Emphasized(word));
+						return;
+					}
+
+					emphasizedString.Add(word);
+					return;
+				}
+
+				if (word.StartsWith(t, StringComparison.CurrentCultureIgnoreCase))
+				{
+					emphasizedString.Add(Emphasized(word));
+					return;
+				}
+
+				if (word.EndsWith(t, StringComparison.CurrentCultureIgnoreCase))
+				{
+					emphasizedString.Add(Emphasized(word));
+					return;
+				}
+
+			}
+
+			emphasizedString.Add(word);
+
+			string Emphasized(string emphasizeThis)
+			{
+				return $"{beginEmphasis}{emphasizeThis}{endEmphasis}";
+			}
 		}
 
 		public JokesIncoming GetJokes(string term, int limit)
