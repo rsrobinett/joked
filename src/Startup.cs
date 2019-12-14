@@ -8,6 +8,8 @@ using Microsoft.OpenApi.Models;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Joked
 {
@@ -28,19 +30,24 @@ namespace Joked
 			services.AddCors(options =>
 			{
 				options.AddPolicy("CorsPolicy", builder => builder
-					.WithOrigins("http://localhost:4200")
+					.WithOrigins("http://localhost:3000", "http://localhost:4200")
 					.AllowAnyMethod()
 					.AllowAnyHeader()
 					.AllowCredentials());
 			});
-			
-			services.AddSignalR();
+
+			services.AddSignalR()
+				.AddJsonProtocol(options =>
+				{
+					options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+				});
 
 			services.AddHttpContextAccessor();
 
 			services.AddHttpClient<IJokeHttpClient, JokeHttpClient>();
 
-			services.AddControllers();
+			services.AddControllers()
+				.SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
 			services.AddSwaggerGen(c =>
 			{
@@ -56,6 +63,7 @@ namespace Joked
 				c.IncludeXmlComments(xmlPath);
 			});
 
+			//services.AddSingleton<IHostedService, RandomJokeTimerService>();
 			services.AddHostedService<RandomJokeTimerService>();
 		}
 
@@ -79,12 +87,13 @@ namespace Joked
 
 			app.UseCors("CorsPolicy");
 
-			//app.UseAuthorization();
+			app.UseAuthorization();
 
 			app.UseEndpoints(endpoints =>
 			{
 				endpoints.MapControllers();
-				endpoints.MapHub<JokeHub>("api/jokes/random");
+				endpoints.MapHub<JokeHub>("/randomjokes");
+				//endpoints.MapHub<JokeHub>("/coolmessages");
 			});
 		}
 	}

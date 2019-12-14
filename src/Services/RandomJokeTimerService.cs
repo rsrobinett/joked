@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace Joked.Services
@@ -17,11 +18,13 @@ namespace Joked.Services
 
 		private readonly IJokeHttpClient _httpClient;
 		private readonly ILogger<RandomJokeTimerService> _logger;
+		private readonly IHubContext<JokeHub> _hubContext;
 
-		public RandomJokeTimerService(IJokeHttpClient client, ILogger<RandomJokeTimerService> logger)
+		public RandomJokeTimerService(IJokeHttpClient client, ILogger<RandomJokeTimerService> logger, IHubContext<JokeHub> hub)
 		{
 			_httpClient = client;
 			_logger = logger;
+			_hubContext = hub;
 		}
 
 		public Task StartAsync(CancellationToken cancellationToken)
@@ -39,7 +42,7 @@ namespace Joked.Services
 
 			var joke = JsonSerializer.Deserialize<JokeIncoming>(result) as IJoke;
 
-			DisplayRandomJoke(HttpUtility.UrlDecode(joke?.Text ?? FallbackJoke));
+			DisplayRandomJoke(HttpUtility.UrlDecode(joke?.Text ?? FallbackJoke)).Wait(cancellationToken);
 		}
 
 		public async Task<string> GetRandomJoke()
@@ -47,11 +50,11 @@ namespace Joked.Services
 			return await _httpClient.Get("/");
 		}
 
-		private void DisplayRandomJoke(string joke)
+		private async Task DisplayRandomJoke(string joke)
 		{
-			_logger.Log(LogLevel.Critical, joke);
-			//Socket.ConnectAsync(SocketType.Stream, )
-			//_hub.Clients.All.SendAsync()
+			_logger.Log(LogLevel.Critical, "sending:" + joke);
+			
+			await _hubContext.Clients.All.SendAsync("randomJoke", joke);
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken)
