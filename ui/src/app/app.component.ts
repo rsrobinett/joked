@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { SignalRService } from './core/services/signalR.service';
-import { AppModule } from './app.module';
+import { SignalRService } from './services/signalR.service';
 
 @Component({
   selector: 'app-root',
@@ -8,7 +7,7 @@ import { AppModule } from './app.module';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'angularsignalrclient';
+  title = 'Joked';
 
   constructor(private readonly signalRService: SignalRService) {}
 }

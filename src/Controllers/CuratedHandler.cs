@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using Joked.Model;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 
 namespace Joked.Controllers
@@ -14,15 +13,13 @@ namespace Joked.Controllers
 		private ILogger _logger;
 		private const int MediumJokeMinLength = 10;
 		private const int LongJokeMinLength = 20;
-		private const string BeginEmphasis = "*";
-		private const string EndEmphasis = "*";
-
+		private const string BeginEmphasis = "<strong>";
+		private const string EndEmphasis = "</strong>";
 		
 		public CuratedHandler(ILogger logger)
 		{
 			_logger = logger;
 		}
-
 		public CuratedJokes CurateJokes(JokeIncoming[] jokes, string term)
 		{
 			if (jokes == null)
@@ -42,7 +39,6 @@ namespace Joked.Controllers
 				Long = jokesText?.Where(x => LengthOfJoke(x) >= LongJokeMinLength).Select(x => EmphasizeTerm(x, term)).ToList()
 			};
 			return curatedJokes;
-
 		}
 		
 		internal int LengthOfJoke(string phrase)

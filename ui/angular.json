@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "angularsignalrclient": {
+    "Joked": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -14,7 +14,7 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "aot": true,
-            "outputPath": "dist/angularsignalrclient",
+            "outputPath": "dist/Joked",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -68,18 +68,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "angularsignalrclient:build"
+            "browserTarget": "Joked:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "angularsignalrclient:build:production"
+              "browserTarget": "Joked:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "angularsignalrclient:build"
+            "browserTarget": "Joked:build"
           }
         },
         "test": {
@@ -113,7 +113,7 @@
         }
       }
     },
-    "angularsignalrclient-e2e": {
+    "Joked-e2e": {
       "root": "e2e/",
       "projectType": "application",
       "prefix": "",
@@ -122,11 +122,11 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "angularsignalrclient:serve"
+            "devServerTarget": "Joked:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "angularsignalrclient:serve:production"
+              "devServerTarget": "Joked:serve:production"
             }
           }
         },
@@ -142,7 +142,7 @@
       }
     }
   },
-  "defaultProject": "angularsignalrclient",
+  "defaultProject": "Joked",
   "cli": {
     "analytics": "11dcddec-5115-40e0-be44-0b7622611016"
   }

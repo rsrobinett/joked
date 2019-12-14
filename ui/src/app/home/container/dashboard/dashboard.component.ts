@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { CuratedJokeDataService } from '@app/core/services/joke-curated-data.service';
-import { SignalRService } from '@app/core/services/signalR.service';
+import { CuratedJokeDataService } from '@app/services/joke-curated-data.service';
+import { SignalRService } from '@app/services/signalR.service';
 import { Observable } from 'rxjs';
 import { CuratedJokes } from '@app/models/curatedJokes.model';
 

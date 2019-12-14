@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '@environments/environment';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { CuratedJokes } from '../../models/curatedJokes.model';
+import { CuratedJokes } from '../models/curatedJokes.model';
 
 @Injectable({ providedIn: 'root' })
 export class CuratedJokeDataService {
