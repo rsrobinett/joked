@@ -1,24 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Web;
 using Joked.Model;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace Joked.Controllers
 {
 	internal class CuratedHandler : ICuratedHandler
 	{
-		private ILogger _logger;
+		private readonly ILogger _logger;
+		private readonly IJokeHttpClient _httpClient;
 		private const int MediumJokeMinLength = 10;
 		private const int LongJokeMinLength = 20;
-		private const string BeginEmphasis = "<strong>";
+		private const string BeginEmphasis = "*";
 		private const string EndEmphasis = "</strong>";
 		
-		public CuratedHandler(ILogger logger)
+		public CuratedHandler(ILogger logger, IJokeHttpClient client)
 		{
 			_logger = logger;
+			_httpClient = client;
 		}
 		public CuratedJokes CurateJokes(JokeIncoming[] jokes, string term)
 		{
@@ -92,52 +95,19 @@ namespace Joked.Controllers
 			}
 
 			return string.Join(" ", emphasizedString);
+		}
 
-			//var t = HttpUtility.UrlDecode(term);
-			//var x = jokeText.Split(' ');
-			//var y = x.Select(z =>
-			//{
-			//	//if (z.ToLower().Contains(t.ToLower()))
-			//	if (z.ToLower()==(t.ToLower()))
-			//	{
-			//		//var regexTermSearch = $@"\b({t})\b";
-			//		//var w = Regex.Replace(jokeText, regexTermSearch, z, RegexOptions.IgnoreCase);
-			//		//var w = string.Replace(x, beginEmphasis + z + endEmphasis);
-			//		var w = beginEmphasis + z + endEmphasis;
-			//		return w;
-			//	}
-			//	else
-			//	{
-			//		return z;
-			//	}
-			//});
-
-			//return string.Join(" ", y);
-
-
-			//const string regexSplitExpression = @"[^[\d|\p{L}]*\p{Z}|--[^[\d|\p{L}]*";
-			//Regex.Split(phrase ?? "", regexSplitExpression);
-			//var regexReplaceTerm = $@"{beginEmphasis}$1{endEmphasis}";
-
-			//var regexReplaceTerm = $@"{beginEmphasis}$1{endEmphasis}";
-			//var regexTermSearch = $@"\b({t})\b";
-			//var regexTermSearch = $@"(?=\S*['-])([{t}'-]+)";
-			//var regexTermSearch = $@"(?=\S*['-])([{t}]+)";
-			//return Regex.Replace(jokeText, regexTermSearch, regexReplaceTerm, RegexOptions.IgnoreCase);
-
-			//var termList = term.Split().OrderByDescending(x=>x.Length);
-
-			//foreach (var t in termList)
-			//{ 
-			//	jokeText = jokeText.Replace(t, beginEmphasis + t + endEmphasis);
-			//}
-
-			//return jokeText;
+		public JokesIncoming GetJokes(string term, int limit)
+		{
+			var request = _httpClient.Get($"search?limit={limit}&term={term}").Result.Replace(@"\r\n", Environment.NewLine);
+			var jokes = JsonSerializer.Deserialize<JokesIncoming>(request);
+			return jokes;
 		}
 	}
 
 	internal interface ICuratedHandler
 	{
 		CuratedJokes CurateJokes(JokeIncoming[] jokes, string term);
+		JokesIncoming GetJokes(string term, int limit);
 	}
 }

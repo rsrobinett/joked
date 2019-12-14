@@ -11,6 +11,7 @@ namespace Joked.Test.Controllers
 {
 	public class CuratedHandlerTests
 	{
+		private IJokeHttpClient _httpClient;
 		private CuratedHandler _curatedHandler;
 		private ILogger<CuratedHandler> _logger;
 		private List<JokeIncoming> _givenJokes;
@@ -23,7 +24,8 @@ namespace Joked.Test.Controllers
 		{
 			_givenJokes = new List<JokeIncoming>();
 			_logger = new Mock<ILogger<CuratedHandler>>().Object;
-			_curatedHandler = new CuratedHandler(_logger);
+			_httpClient = new Mock<IJokeHttpClient>().Object;
+			_curatedHandler = new CuratedHandler(_logger, _httpClient);
 		}
 
 		[Test]
@@ -164,8 +166,9 @@ namespace Joked.Test.Controllers
 		private readonly JokeIncoming _shortJoke = new JokeIncoming{Text = JokeLength9};
 		private readonly JokeIncoming _mediumJoke = new JokeIncoming { Text = JokeLength11 };
 		private readonly JokeIncoming _longJoke = new JokeIncoming { Text =JokeLength21 };
-
 		
+
+
 		//const string NewLineCharJokes = new JokeIncoming { Text = "Why did Mozart kill all his chickens?\r\nBecause when he asked them who the best composer was, they'd all say \"Bach bach bach!\"\r\n" };
 
 

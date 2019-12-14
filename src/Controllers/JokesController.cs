@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Joked.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -8,6 +8,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Joked.Controllers
 {
+	[BindProperties(SupportsGet = true)]
+	public class CuratedRequest
+	{
+		[FromQuery(Name="curate")]
+		public bool IsCurated { get; set; }
+		[FromQuery(Name="term")]
+		public string Term { get; set; }
+	}
 
 	[ApiController]
 	[Route("api/[controller]")]
@@ -26,22 +34,35 @@ namespace Joked.Controllers
 			_hub = hub;
 		}
 
-		public JokesController(IJokeHttpClient client, ILogger<JokesController> logger, IHubContext<JokeHub> hub) : this(client, logger, new CuratedHandler(logger), hub)
+		public JokesController(IJokeHttpClient client, ILogger<JokesController> logger, IHubContext<JokeHub> hub) : this(client, logger, new CuratedHandler(logger, client), hub)
 		{
 		
 		}
 
-		//[HttpGet("random")]
-		//public IActionResult GetRandomJokes()
-		//{
-		//	_hub.Clients.All.SendAsync("transferjokedata", GetRandomJoke());
-		//	return Ok(new { Message = "Request Completed" });
-		//}
+		/// <summary>
+		/// Display curated list of jokes for a search term
+		/// </summary>
+		/// <remarks>
+		/// Accept a search term and display the first 30 jokes containing that term,
+		/// with the matching term emphasized in some way (upper, bold, color, etc.)
+		/// and the matching jokes grouped by length: short  <![CDATA[ (<10 words), medium (<20 words), long (<= 20 words) ]]>
+		/// https://icanhazdadjoke.com/api
+		/// </remarks>
+		[HttpGet("")]
+		public ActionResult<CuratedJokes> GetJokes([FromQuery] string term, [FromQuery] bool curate = true, [FromQuery] int limit = 30)
+		{
+			var (result, isValid) = ValidateRequest(term, curate);
+			if (!isValid)
+			{
+				return result;
+			}
 
-		//public async Task<string> GetRandomJoke()
-		//{
-		//	return await _httpClient.Get("/");
-		//}
+			var jokes = _curatedHandler.GetJokes(term, limit);
+
+			var curatedJokes = _curatedHandler.CurateJokes(jokes.Jokes, term);
+			
+			return Ok(curatedJokes);
+		}
 
 		/// <summary>
 		/// Display curated list of jokes for a search term
@@ -59,6 +80,7 @@ namespace Joked.Controllers
 			{
 				return BadRequest();
 			}
+
 			if (string.IsNullOrWhiteSpace(searchTerm))
 			{
 				var errorMessage = "The searchTerm cannot be empty or whitespace";
@@ -72,10 +94,33 @@ namespace Joked.Controllers
 
 			var curatedJokes = _curatedHandler.CurateJokes(jokes.Jokes, searchTerm);
 			
-			_logger.Log(LogLevel.Critical,  JsonSerializer.Serialize(curatedJokes));
-
 			return Ok(curatedJokes);
 		}
 
+		public (ActionResult Result, bool IsValid) ValidateRequest(string term, bool curate)
+		{
+			const string invalidSearchTerm = "The search term cannot be empty or whitespace";
+			const string notSupportedErrorMessage = "Request is not implemented, only curated jokes are available at this time";
+
+			if (!ModelState.IsValid)
+			{
+				_logger.Log(LogLevel.Information, ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage + Environment.NewLine).ToString());
+				return (BadRequest(), false);
+			}
+
+			if (curate)
+			{
+				_logger.Log(LogLevel.Information, notSupportedErrorMessage);
+				return (StatusCode(501, notSupportedErrorMessage), false);
+			}
+
+			if (string.IsNullOrWhiteSpace(term))
+			{
+				_logger.Log(LogLevel.Information, invalidSearchTerm);
+				return (BadRequest(invalidSearchTerm), false);
+			}
+
+			return (null, true);
+		}
 	}
 }
