@@ -108,7 +108,6 @@ namespace Joked.Controllers
 
 				if (singleTerm.Length < 3)
 				{
-					
 					if (String.Equals(word.Trim(punctuationToTrim), singleTerm, StringComparison.InvariantCultureIgnoreCase))
 					{
 						return Regex.Replace(word, singleTerm, LocalReplaceMatchCase, RegexOptions.IgnoreCase);
