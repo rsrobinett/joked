@@ -80,7 +80,7 @@ namespace Joked
 			{
 				c.SwaggerEndpoint("/swagger/v1/swagger.json", name);
 				c.DocumentTitle = name;
-				c.RoutePrefix = string.Empty;
+				//c.RoutePrefix = string.Empty;
 			});
 
 			app.UseRouting();

@@ -1,7 +1,6 @@
 ﻿using Joked.Model;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Linq.Expressions;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,13 +38,13 @@ namespace Joked.Services
 		{
 			if (cancellationToken.IsCancellationRequested) return;
 
-			IJoke joke = new JokeIncoming(){Text = FallbackJoke};
+			IJoke joke = new JokeDto {Joke = FallbackJoke};
 
 			try
 			{
 				var result = GetRandomJoke().Result;
 
-				joke = JsonSerializer.Deserialize<JokeIncoming>(result.Replace(@"\r\n", " "));
+				joke = JsonSerializer.Deserialize<JokeDto>(result.Replace(@"\r\n", " "));
 			}
 			catch(Exception x)
 			{
@@ -54,7 +53,7 @@ namespace Joked.Services
 			finally
 			{
 				
-				DisplayRandomJoke(HttpUtility.UrlDecode(joke?.Text ?? FallbackJoke)).Wait(cancellationToken);
+				DisplayRandomJoke(HttpUtility.UrlDecode(joke?.Joke ?? FallbackJoke)).Wait(cancellationToken);
 			}
 		}
 

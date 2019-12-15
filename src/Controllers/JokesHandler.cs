@@ -11,12 +11,12 @@ namespace Joked.Controllers
 {
 	internal class JokesHandler : IJokesHandler
 	{
-		private readonly ILogger _logger;
-		private readonly IJokeHttpClient _httpClient;
 		private const int MediumJokeMinLength = 10;
 		private const int LongJokeMinLength = 20;
 		private const string BeginEmphasis = @"*";
 		private const string EndEmphasis = @"&";
+		private readonly IJokeHttpClient _httpClient;
+		private readonly ILogger _logger;
 
 		public JokesHandler(ILogger logger, IJokeHttpClient client)
 		{
@@ -24,7 +24,7 @@ namespace Joked.Controllers
 			_httpClient = client;
 		}
 
-		public CuratedJokes CurateJokes(JokeIncoming[] jokes, string term)
+		public CuratedJokes CurateJokes(IJoke[] jokes, string term)
 		{
 			if (jokes == null)
 			{
@@ -34,7 +34,7 @@ namespace Joked.Controllers
 				return new CuratedJokes();
 			}
 
-			var jokesText = jokes?.Select(x => x?.Text).ToArray();
+			var jokesText = jokes?.Select(x => x?.Joke).ToArray();
 
 			term = HttpUtility.UrlDecode(term);
 
@@ -51,6 +51,13 @@ namespace Joked.Controllers
 			return curatedJokes;
 		}
 
+		public IJokes GetJokes(string term, int limit)
+		{
+			var request = _httpClient.Get($"search?limit={limit}&term={term}").Result.Replace(@"\r\n", " ");
+			var jokes = JsonSerializer.Deserialize<JokesDto>(request);
+			return jokes;
+		}
+
 		internal int LengthOfJoke(string phrase)
 		{
 			const string regexSplitExpression = @"[^[\|\d|\p{L}|']*\p{Z}[^[\d|\p{L}|']*|--*/gmiXx";
@@ -65,15 +72,12 @@ namespace Joked.Controllers
 			//3 + beginning or end(no middle of word)
 			//if multiple terms, all are searched for individually
 
-			if (string.IsNullOrWhiteSpace(term) || (string.IsNullOrWhiteSpace(beginEmphasis) && string.IsNullOrWhiteSpace(endEmphasis)))
-			{
-				return jokeText;
-			}
+			if (string.IsNullOrWhiteSpace(term) ||
+			    string.IsNullOrWhiteSpace(beginEmphasis) && string.IsNullOrWhiteSpace(endEmphasis)) return jokeText;
 
 			var emphasizedString = EmphasizeJoke(jokeText, term, beginEmphasis, endEmphasis);
 
 			return string.Join(" ", emphasizedString);
-
 		}
 
 		private static List<string> EmphasizeJoke(string jokeText, string term, string beginEmphasis,
@@ -84,9 +88,7 @@ namespace Joked.Controllers
 			var emphasizedString = new List<string>();
 
 			foreach (var word in splitJoke)
-			{
 				emphasizedString.Add(TryEmphasizeWord(beginEmphasis, endEmphasis, termList, word));
-			}
 
 			return emphasizedString;
 		}
@@ -94,61 +96,32 @@ namespace Joked.Controllers
 		private static string TryEmphasizeWord(string beginEmphasis, string endEmphasis, IEnumerable<string> termList,
 			string word)
 		{
-			char[] punctuationToTrim = { ',', '.', '"', '?', '!', '\'' };
-			var presentTerms = termList.Where(x=>word.Contains(x,StringComparison.CurrentCultureIgnoreCase)).ToList();
+			var presentTerms = termList.Where(x => word.Contains(x, StringComparison.CurrentCultureIgnoreCase))
+				.ToList();
+			if (presentTerms.Count == 0) return word;
 
-			if (presentTerms.Count == 0)
-			{
-				return word;
-			}
+			var emphasisTrackerArray = BuildArrayToTrackEmphasis(word, presentTerms);
 
-			if (presentTerms.Count == 1)
-			{
-				var singleTerm = presentTerms.First();
+			var emphasizedString = EmphasizeString(beginEmphasis, endEmphasis, word, emphasisTrackerArray);
 
-				if (singleTerm.Length < 3)
-				{
-					if (String.Equals(word.Trim(punctuationToTrim), singleTerm, StringComparison.InvariantCultureIgnoreCase))
-					{
-						return Regex.Replace(word, singleTerm, LocalReplaceMatchCase, RegexOptions.IgnoreCase);
-					}
+			return emphasizedString;
+		}
 
-					return word;
-				}
-				
-				if (word.Trim(punctuationToTrim).StartsWith(singleTerm, StringComparison.InvariantCultureIgnoreCase))
-				{
-					return Regex.Replace(word, singleTerm, LocalReplaceMatchCase, RegexOptions.IgnoreCase);
-				}
-
-				if (word.Trim(punctuationToTrim).EndsWith(singleTerm, StringComparison.InvariantCultureIgnoreCase))
-				{
-					return Regex.Replace(word, singleTerm, LocalReplaceMatchCase, RegexOptions.IgnoreCase);
-				}
-
-				return word;
-			}
-			
-			var charWordArray = word.ToCharArray();
-			
-			foreach (var t in presentTerms)
-			{
-				Regex.Replace(word, t, BuildEmphasisCharArray, RegexOptions.IgnoreCase);
-			}
-
+		private static string EmphasizeString(string beginEmphasis, string endEmphasis, string word,
+			char[] emphasisTrackerArray)
+		{
 			var isBold = false;
-
-			List<char> newWord = new List<char>();
-			for (int i = 0; i < charWordArray.Length; i++)
+			var newWord = new List<char>();
+			for (var i = 0; i < emphasisTrackerArray.Length; i++)
 			{
-				if (charWordArray[i] == '*' && !isBold)
+				if (emphasisTrackerArray[i] == '*' && !isBold)
 				{
 					newWord.AddRange(beginEmphasis.ToCharArray());
 					isBold = true;
 				}
 				else
 				{
-					if (charWordArray[i] != '*' && isBold)
+					if (emphasisTrackerArray[i] != '*' && isBold)
 					{
 						newWord.AddRange(endEmphasis.ToCharArray());
 						isBold = false;
@@ -158,44 +131,44 @@ namespace Joked.Controllers
 				newWord.Add(word[i]);
 			}
 
-			if (isBold)
-			{
-				newWord.AddRange(endEmphasis.ToCharArray());
-			}
+			if (isBold) newWord.AddRange(endEmphasis.ToCharArray());
 
-			return new string(newWord.ToArray());
-
-			
-			string BuildEmphasisCharArray(Match matchExpression)
-			{
-				for (var i = 0; i < matchExpression.Length; i++)
-				{
-					charWordArray[matchExpression.Index + i] = '*';
-				}
-				
-				return matchExpression.Value;
-			}
-
-			string LocalReplaceMatchCase(Match matchExpression)
-			{
-				return $"{beginEmphasis}{matchExpression.Value}{endEmphasis}";
-			}
-			
+			var emphasizedString = new string(newWord.ToArray());
+			return emphasizedString;
 		}
-	
-		
-		public JokesIncoming GetJokes(string term, int limit)
+
+		private static char[] BuildArrayToTrackEmphasis(string word, List<string> presentTerms)
 		{
-			var request = _httpClient.Get($"search?limit={limit}&term={term}").Result.Replace(@"\r\n", " ");
-			var jokes = JsonSerializer.Deserialize<JokesIncoming>(request);
-			return jokes;
-		}
+			var emphasisTrackerArray = new char[word.Length];
 
+			char[] punctuationToTrim = {',', '.', '"', '?', '!', '\''};
+			foreach (var term in presentTerms)
+				if (term.Length < 3)
+				{
+					if (string.Equals(word.Trim(punctuationToTrim), term, StringComparison.InvariantCultureIgnoreCase))
+						BuildEmphasisCharArray(Regex.Match(word, term, RegexOptions.IgnoreCase));
+				}
+				else
+				{
+					if (word.Trim(punctuationToTrim).StartsWith(term, StringComparison.InvariantCultureIgnoreCase))
+						BuildEmphasisCharArray(Regex.Match(word, term, RegexOptions.IgnoreCase));
+
+					if (word.Trim(punctuationToTrim).EndsWith(term, StringComparison.InvariantCultureIgnoreCase))
+						BuildEmphasisCharArray(Regex.Match(word, term, RegexOptions.IgnoreCase));
+				}
+
+			void BuildEmphasisCharArray(Match matchExpression)
+			{
+				for (var i = 0; i < matchExpression.Length; i++) emphasisTrackerArray[matchExpression.Index + i] = '*';
+			}
+
+			return emphasisTrackerArray;
+		}
 	}
 
 	internal interface IJokesHandler
 	{
-		CuratedJokes CurateJokes(JokeIncoming[] jokes, string term);
-		JokesIncoming GetJokes(string term, int limit);
+		CuratedJokes CurateJokes(IJoke[] jokes, string term);
+		IJokes GetJokes(string term, int limit);
 	}
 }

@@ -108,14 +108,14 @@ namespace Joked.Test.Controllers
 
 		private void GivenJokes(params string[] jokes)
 		{
-			_givenJokes = new List<JokeIncoming>();
+			_givenJokes = new List<IJoke>();
 			foreach (var joke in jokes)
 			{
-				_givenJokes.Add( new JokeIncoming { Text = joke});
+				_givenJokes.Add( new JokeDto { Joke = joke});
 			}
 		}
 
-		private void GivenJokes(params JokeIncoming[] jokes)
+		private void GivenJokes(params IJoke[] jokes)
 		{
 			_givenJokes.AddRange(jokes.ToList());
 		}
@@ -174,7 +174,7 @@ namespace Joked.Test.Controllers
 		private IJokeHttpClient _httpClient;
 		private JokesHandler _curatedHandler;
 		private ILogger<JokesHandler> _logger;
-		private List<JokeIncoming> _givenJokes;
+		private List<IJoke> _givenJokes;
 		private CuratedJokes _thenCuratedJokes;
 		private string _givenTerm = "default";
 		private string _thenEmphasizedTerm;
@@ -182,7 +182,7 @@ namespace Joked.Test.Controllers
 		[SetUp]
 		public void Setup()
 		{
-			_givenJokes = new List<JokeIncoming>();
+			_givenJokes = new List<IJoke>();
 			_logger = new Mock<ILogger<JokesHandler>>().Object;
 			_httpClient = new Mock<IJokeHttpClient>().Object;
 			_curatedHandler = new JokesHandler(_logger, _httpClient);
@@ -213,9 +213,9 @@ namespace Joked.Test.Controllers
 		private const string JokeLength9 = "one two three four five six seven eight nine";
 		private const string JokeLength1 = "one";
 		
-		private readonly JokeIncoming _shortJoke = new JokeIncoming{Text = JokeLength9};
-		private readonly JokeIncoming _mediumJoke = new JokeIncoming { Text = JokeLength11 };
-		private readonly JokeIncoming _longJoke = new JokeIncoming { Text =JokeLength21 };
+		private readonly IJoke _shortJoke = new JokeDto(){ Joke = JokeLength9};
+		private readonly IJoke _mediumJoke = new JokeDto() { Joke = JokeLength11 };
+		private readonly IJoke _longJoke = new JokeDto() { Joke = JokeLength21 };
 		private string _givenJoke;
 		private int _thenJokeLength;
 

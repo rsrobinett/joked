@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Net;
 using Joked.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -46,11 +48,19 @@ namespace Joked.Controllers
 				return result;
 			}
 
-			var jokes = _jokesHandler.GetJokes(term, limit);
+			try
+			{
+				var jokes = _jokesHandler.GetJokes(term, limit);
 
-			var curatedJokes = _jokesHandler.CurateJokes(jokes.Jokes, term);
-			
-			return Ok(curatedJokes);
+				var curatedJokes = _jokesHandler.CurateJokes(jokes.Jokes, term);
+
+				return Ok(curatedJokes);
+			}
+			catch (Exception x)
+			{
+				_logger.Log(LogLevel.Error, x, "Request Failed For unknown reason");
+				return StatusCode((int) HttpStatusCode.InternalServerError);
+			}
 		}
 
 		private (ActionResult Result, bool IsValid) ValidateRequest(string term, bool curate)
