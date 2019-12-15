@@ -1,17 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using Joked.Controllers;
+using Joked.Handlers;
 using Joked.Model;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 
-namespace Joked.Test.Controllers
+namespace Joked.Test.Handlers
 {
 	public class CuratedHandlerTests
 	{
-
 		[Test]
 		public void ShouldHandleNullJokes()
 		{
@@ -46,39 +45,6 @@ namespace Joked.Test.Controllers
 		}
 
 		[Test]
-		[TestCase("hello", "hello", "*", "*", "*hello*")]
-		[TestCase("Hello", "hello", "*", "*", "*Hello*")]
-		[TestCase("hello", "Hello", "*", "*", "*hello*")]
-		[TestCase("hello", "hello", "<tag>", "</tag>", "<tag>hello</tag>")]
-		[TestCase("Hello", "hello", "<tag>", "</tag>", "<tag>Hello</tag>")]
-		[TestCase("hello", "Hello", "<tag>", "</tag>", "<tag>hello</tag>")]
-		[TestCase("1 2 3 4", "2", "*", "*", "1 *2* 3 4")]
-		[TestCase("Hello today is a good day to say hello!", "hello", "*", "*", "*Hello* today is a good day to say *hello*!")]
-		[TestCase("Well hello there.", "Hello", "*", "*", "Well *hello* there.")]
-		[TestCase("What a wonderful day.", "a", "*", "*", "What *a* wonderful day.")]
-		[TestCase("I'm Okay, I say.", "I", "*", "*", "I'm Okay, *I* say.")]
-		[TestCase("I'm Okay, I say.", "I'm", "*", "*", "*I'm* Okay, I say.")]
-		[TestCase("www.degreed.com degreed.", "degreed", "*", "*", "www.degreed.com *degreed*.")]
-		[TestCase("Me enjoy a good pick-me-up first thing in the morning", "me", "*", "*", "*Me* enjoy a good pick-me-up first thing in the morning")]
-		[TestCase("Hello", "hello hel llo", "*", "*", "*Hello*")]
-		[TestCase("Hello", "llo", "*", "*", "He*llo*")]
-		[TestCase("Hello", "Hel", "*", "*", "*Hel*lo")]
-		[TestCase("Hello", "ello", "*", "*", "H*ello*")]
-		[TestCase("Hello my name is", "nam is llo m hello", "*", "*", "*Hello* my *nam*e *is*")]
-		[TestCase("Hello my name is", "", "*", "*", "Hello my name is")]
-		[TestCase("Hello!", "llo", "*", "*", "He*llo*!")]
-		[TestCase("I!", "i", "*", "*", "*I*!")]
-		[TestCase("Password", "pass sword", "*", "*", "*Password*")]
-		[TestCase("Password", "pass ord", "*", "*", "*Pass*w*ord*")]
-
-		public void ShouldEmphasizeSearchTerm(string givenJoke, string givenTerm, string beginEmph, string endEmph, string expectedEmphasizedJoke)
-		{
-			GivenSearchTerm(givenTerm);
-			WhenEmphasizeTermsCalled(givenJoke, givenTerm, beginEmph, endEmph);
-			ThenExpectedStringIsReturned(expectedEmphasizedJoke, givenTerm);
-		}
-
-		[Test]
 		[TestCase("this is my first joke.", 5)]
 		[TestCase("this is my joke 2.", 5)]
 		[TestCase("this is my joke # 3.", 5)]
@@ -100,7 +66,7 @@ namespace Joked.Test.Controllers
 		{
 			_givenJoke = thisIsMyJoke;
 		}
-		
+
 		private void GivenSearchTerm(string term)
 		{
 			_givenTerm = term;
@@ -108,14 +74,14 @@ namespace Joked.Test.Controllers
 
 		private void GivenJokes(params string[] jokes)
 		{
-			_givenJokes = new List<IJoke>();
+			_givenJokes = new List<JokeDto>();
 			foreach (var joke in jokes)
 			{
 				_givenJokes.Add( new JokeDto { Joke = joke});
 			}
 		}
 
-		private void GivenJokes(params IJoke[] jokes)
+		private void GivenJokes(params JokeDto[] jokes)
 		{
 			_givenJokes.AddRange(jokes.ToList());
 		}
@@ -132,20 +98,18 @@ namespace Joked.Test.Controllers
 		{
 			_thenJokeLength = _curatedHandler.LengthOfJoke(_givenJoke);
 		}
-
-		private void WhenEmphasizeTermsCalled(string jokeText, string term, string beginEmphasis, string endEmphasis)
+		private void WhenJokesAreCurated(bool shoudEmphasize = false)
 		{
-			_thenEmphasizedTerm = _curatedHandler.Emphasize(jokeText, term, beginEmphasis, endEmphasis);
+			_thenCuratedJokes = _curatedHandler.CurateJokes(_givenJokes?.ToArray(), _givenTerm, shoudEmphasize);
 		}
-
+		private void WhenJokesAreCuratedAndEmphazied()
+		{
+			WhenJokesAreCurated(true);
+		}
 		#endregion
 
 		#region thens
 
-		private void WhenJokesAreCurated()
-		{
-			_thenCuratedJokes = _curatedHandler.CurateJokes(_givenJokes?.ToArray(), _givenTerm);
-		}
 		private void ThenCuratedJokesIsEmpty()
 		{
 			_thenCuratedJokes.Should().BeEquivalentTo(new CuratedJokes());
@@ -154,11 +118,7 @@ namespace Joked.Test.Controllers
 		{
 			_thenJokeLength.Should().Be(expectedJokeLength,joke);
 		}
-		private void ThenExpectedStringIsReturned(string expectedEmphasizedJoke, string because)
-		{
-			_thenEmphasizedTerm.Should().Be(expectedEmphasizedJoke, because);
-		}
-
+	
 		private void ThenCuratedJokesArGroupedAsExpected(int expectdShortJokeCount, int expextedMediumJokeCount,
 			int expectedLongJokeCount)
 		{
@@ -174,7 +134,7 @@ namespace Joked.Test.Controllers
 		private IJokeHttpClient _httpClient;
 		private JokesHandler _curatedHandler;
 		private ILogger<JokesHandler> _logger;
-		private List<IJoke> _givenJokes;
+		private List<JokeDto> _givenJokes;
 		private CuratedJokes _thenCuratedJokes;
 		private string _givenTerm = "default";
 		private string _thenEmphasizedTerm;
@@ -182,7 +142,7 @@ namespace Joked.Test.Controllers
 		[SetUp]
 		public void Setup()
 		{
-			_givenJokes = new List<IJoke>();
+			_givenJokes = new List<JokeDto>();
 			_logger = new Mock<ILogger<JokesHandler>>().Object;
 			_httpClient = new Mock<IJokeHttpClient>().Object;
 			_curatedHandler = new JokesHandler(_logger, _httpClient);
@@ -213,9 +173,9 @@ namespace Joked.Test.Controllers
 		private const string JokeLength9 = "one two three four five six seven eight nine";
 		private const string JokeLength1 = "one";
 		
-		private readonly IJoke _shortJoke = new JokeDto(){ Joke = JokeLength9};
-		private readonly IJoke _mediumJoke = new JokeDto() { Joke = JokeLength11 };
-		private readonly IJoke _longJoke = new JokeDto() { Joke = JokeLength21 };
+		private readonly JokeDto _shortJoke = new JokeDto(){ Joke = JokeLength9};
+		private readonly JokeDto _mediumJoke = new JokeDto() { Joke = JokeLength11 };
+		private readonly JokeDto _longJoke = new JokeDto() { Joke = JokeLength21 };
 		private string _givenJoke;
 		private int _thenJokeLength;
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using Joked.Handlers;
 using Joked.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -40,7 +41,7 @@ namespace Joked.Controllers
 		/// https://icanhazdadjoke.com/api
 		/// </remarks>
 		[HttpGet("")]
-		public ActionResult<CuratedJokes> GetJokes([FromQuery] string term, [FromQuery] bool curate = true, [FromQuery] int limit = 30)
+		public ActionResult<CuratedJokes> GetJokes([FromQuery] string term, [FromQuery] bool curate = true, [FromQuery] int limit = 30, [FromQuery] bool emphasize = false)
 		{
 			var (result, isValid) = ValidateRequest(term, curate);
 			if (!isValid)
@@ -51,8 +52,7 @@ namespace Joked.Controllers
 			try
 			{
 				var jokes = _jokesHandler.GetJokes(term, limit);
-
-				var curatedJokes = _jokesHandler.CurateJokes(jokes.Jokes, term);
+				var curatedJokes = _jokesHandler.CurateJokes(jokes.Jokes, term, emphasize);
 
 				return Ok(curatedJokes);
 			}

@@ -18,4 +18,8 @@
     <ProjectReference Include="..\src\Joked.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+  </ItemGroup>
+
 </Project>
