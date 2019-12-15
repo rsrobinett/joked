@@ -1,7 +1,9 @@
 import { Routes } from '@angular/router';
+import { RandomComponent } from './components/random/random.component';
+import { CuratedComponent } from './components/curated/curated.component';
 
 export const appRoutes: Routes = [
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'dashboard', loadChildren: () => import('./home/home.module').then(m => m.HomeModule) },
-  { path: 'about', loadChildren: () => import('./about/about.module').then(m => m.AboutModule) }
+  { path: '', redirectTo: 'random', pathMatch: 'full' },
+  { path: 'random', component: RandomComponent },
+  { path: 'curated', component: CuratedComponent }
 ];

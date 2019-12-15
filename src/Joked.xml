@@ -15,16 +15,25 @@
             https://icanhazdadjoke.com/api
             </remarks>
         </member>
-        <member name="M:Joked.Controllers.JokesController.GetCuratedJokes(System.String)">
+        <member name="T:Joked.Model.CuratedJokes">
             <summary>
-            Display curated list of jokes for a search term
+            List of jokes curated in to 3 groups short medium and long
             </summary>
-            <remarks>
-            Accept a search term and display the first 30 jokes containing that term,
-            with the matching term emphasized in some way (upper, bold, color, etc.)
-            and the matching jokes grouped by length: short  <![CDATA[ (<10 words), medium (<20 words), long (<= 20 words) ]]>
-            https://icanhazdadjoke.com/api
-            </remarks>
+        </member>
+        <member name="P:Joked.Model.CuratedJokes.Short">
+            <summary>
+            Short jokes <![CDATA[<10 words]]>
+            </summary>
+        </member>
+        <member name="P:Joked.Model.CuratedJokes.Medium">
+            <summary>
+            Medium Joke <![CDATA[<20 words ]]>
+            </summary>
+        </member>
+        <member name="P:Joked.Model.CuratedJokes.Long">
+            <summary>
+            Long jokes >= 20 words
+            </summary>
         </member>
     </members>
 </doc>

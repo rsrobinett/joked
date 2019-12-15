@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { SignalRService } from './services/signalR.service';
 
 @Component({
   selector: 'app-root',
@@ -8,6 +7,4 @@ import { SignalRService } from './services/signalR.service';
 })
 export class AppComponent {
   title = 'Joked';
-
-  constructor(private readonly signalRService: SignalRService) {}
 }

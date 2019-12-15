@@ -11,12 +11,12 @@ export class CuratedJokeDataService {
 
   constructor(private http: HttpClient) {
     this.actionUrl =
-      environment.baseUrls.server + environment.baseUrls.apiUrl + 'jokes/curated/';
+      environment.baseUrls.server + environment.baseUrls.apiUrl + 'jokes?curate=true&limit=30';
   }
 
   getCuratedJokes(searchTerm: string) {
       return this.http
-      .get<CuratedJokes>(this.actionUrl + searchTerm)
+      .get<CuratedJokes>(this.actionUrl + "&term=" + searchTerm)
       .pipe(catchError(this.handleError));
   }
 

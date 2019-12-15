@@ -1,0 +1,8 @@
+<h3>Random Joke</h3>
+<div class="mr-md-3 pt-3 px-3 pt-md-5 px-md-5" *ngIf="jokeValue$ | async as joke; else loading">
+  <div class="mx-auto wrapper">
+    {{ joke }}
+  </div>
+</div>
+
+<ng-template #loading>Loading...</ng-template>

@@ -11,22 +11,6 @@ namespace Joked.Test.Controllers
 {
 	public class CuratedHandlerTests
 	{
-		private IJokeHttpClient _httpClient;
-		private CuratedHandler _curatedHandler;
-		private ILogger<CuratedHandler> _logger;
-		private List<JokeIncoming> _givenJokes;
-		private CuratedJokes _thenCuratedJokes;
-		private string _givenTerm = "default";
-		private string _thenEmphasizedTerm;
-
-		[SetUp]
-		public void Setup()
-		{
-			_givenJokes = new List<JokeIncoming>();
-			_logger = new Mock<ILogger<CuratedHandler>>().Object;
-			_httpClient = new Mock<IJokeHttpClient>().Object;
-			_curatedHandler = new CuratedHandler(_logger, _httpClient);
-		}
 
 		[Test]
 		public void ShouldHandleNullJokes()
@@ -52,6 +36,7 @@ namespace Joked.Test.Controllers
 		[TestCase("a")]
 		[TestCase("one")]
 		[TestCase("9")]
+		[TestCase("one two")]
 		public void ShouldGroupWithAnyReasonableTerm(string term)
 		{
 			GivenSearchTerm(term);
@@ -68,49 +53,58 @@ namespace Joked.Test.Controllers
 		[TestCase("Hello", "hello", "<tag>", "</tag>", "<tag>Hello</tag>")]
 		[TestCase("hello", "Hello", "<tag>", "</tag>", "<tag>hello</tag>")]
 		[TestCase("1 2 3 4", "2", "*", "*", "1 *2* 3 4")]
-		[TestCase("Hello today is a good day to say hello!", "hello", "*", "*", "*Hello* today is a good day to say *hello!*")]
+		[TestCase("Hello today is a good day to say hello!", "hello", "*", "*", "*Hello* today is a good day to say *hello*!")]
 		[TestCase("Well hello there.", "Hello", "*", "*", "Well *hello* there.")]
 		[TestCase("What a wonderful day.", "a", "*", "*", "What *a* wonderful day.")]
 		[TestCase("I'm Okay, I say.", "I", "*", "*", "I'm Okay, *I* say.")]
 		[TestCase("I'm Okay, I say.", "I'm", "*", "*", "*I'm* Okay, I say.")]
-		[TestCase("www.degreed.com degreed.", "degreed", "*", "*", "www.degreed.com *degreed.*")]
+		[TestCase("www.degreed.com degreed.", "degreed", "*", "*", "www.degreed.com *degreed*.")]
 		[TestCase("Me enjoy a good pick-me-up first thing in the morning", "me", "*", "*", "*Me* enjoy a good pick-me-up first thing in the morning")]
 		[TestCase("Hello", "hello hel llo", "*", "*", "*Hello*")]
-		[TestCase("Hello", "llo", "*", "*", "*Hello*")]
-		[TestCase("Hello", "Hel", "*", "*", "*Hello*")]
-		[TestCase("Hello", "ello", "*", "*", "*Hello*")]
-		[TestCase("Hello my name is", "nam is llo m hello", "*", "*", "*Hello* my *name* *is*")]
+		[TestCase("Hello", "llo", "*", "*", "He*llo*")]
+		[TestCase("Hello", "Hel", "*", "*", "*Hel*lo")]
+		[TestCase("Hello", "ello", "*", "*", "H*ello*")]
+		[TestCase("Hello my name is", "nam is llo m hello", "*", "*", "*Hello* my *nam*e *is*")]
 		[TestCase("Hello my name is", "", "*", "*", "Hello my name is")]
+		[TestCase("Hello!", "llo", "*", "*", "He*llo*!")]
+		[TestCase("I!", "i", "*", "*", "*I*!")]
+		[TestCase("Password", "pass sword", "*", "*", "*Password*")]
+		[TestCase("Password", "pass ord", "*", "*", "*Pass*w*ord*")]
+
 		public void ShouldEmphasizeSearchTerm(string givenJoke, string givenTerm, string beginEmph, string endEmph, string expectedEmphasizedJoke)
 		{
 			GivenSearchTerm(givenTerm);
 			WhenEmphasizeTermsCalled(givenJoke, givenTerm, beginEmph, endEmph);
-			ThenExpectedStringIsReturned(expectedEmphasizedJoke);
+			ThenExpectedStringIsReturned(expectedEmphasizedJoke, givenTerm);
 		}
 
-		private void ThenExpectedStringIsReturned(string expectedEmphasizedJoke)
+		[Test]
+		[TestCase("this is my first joke.", 5)]
+		[TestCase("this is my joke 2.", 5)]
+		[TestCase("this is my joke # 3.", 5)]
+		[TestCase("this is my 4th joke.", 5)]
+		[TestCase("this is my @$#^$ grawlix joke.", 5)]
+		[TestCase("this is my pike-me-up joke.", 5)]
+		[TestCase("this is my exclamatory !!!!! joke.", 5, Ignore = "Edge case: Should !!!!! count as a word?")]
+		[TestCase("this is my emphasis--dash joke.", 6, Ignore= "Edge case: Should emphasis dash make 2 words count as one?")]
+		[TestCase("I'm joking.", 2)]
+		public void ShouldCountWords(string joke, int expectedLength)
 		{
-			_thenEmphasizedTerm.Should().Be(expectedEmphasizedJoke);
+			GivenJoke(joke);
+			WhenMeasuringJokeLength();
+			ThenJokeLengthIs(expectedLength, joke);
 		}
-
-		private void WhenEmphasizeTermsCalled(string jokeText, string term, string beginEmphasis, string endEmphasis)
+		
+		#region givens
+		private void GivenJoke(string thisIsMyJoke)
 		{
-			_thenEmphasizedTerm = _curatedHandler.Emphasize(jokeText, term, beginEmphasis, endEmphasis);
+			_givenJoke = thisIsMyJoke;
 		}
-
+		
 		private void GivenSearchTerm(string term)
 		{
 			_givenTerm = term;
 		}
-
-		private void ThenCuratedJokesArGroupedAsExpected(int expectdShortJokeCount, int expextedMediumJokeCount,
-			int expectedLongJokeCount)
-		{
-			_thenCuratedJokes.Short.Count.Should().Be(expectdShortJokeCount);
-			_thenCuratedJokes.Medium.Count.Should().Be(expextedMediumJokeCount);
-			_thenCuratedJokes.Long.Count.Should().Be(expectedLongJokeCount);
-		}
-
 
 		private void GivenJokes(params string[] jokes)
 		{
@@ -130,6 +124,24 @@ namespace Joked.Test.Controllers
 		{
 			_givenJokes = null;
 		}
+
+		#endregion
+
+		#region whens
+		private void WhenMeasuringJokeLength()
+		{
+			_thenJokeLength = _curatedHandler.LengthOfJoke(_givenJoke);
+		}
+
+		private void WhenEmphasizeTermsCalled(string jokeText, string term, string beginEmphasis, string endEmphasis)
+		{
+			_thenEmphasizedTerm = _curatedHandler.Emphasize(jokeText, term, beginEmphasis, endEmphasis);
+		}
+
+		#endregion
+
+		#region thens
+
 		private void WhenJokesAreCurated()
 		{
 			_thenCuratedJokes = _curatedHandler.CurateJokes(_givenJokes?.ToArray(), _givenTerm);
@@ -137,6 +149,43 @@ namespace Joked.Test.Controllers
 		private void ThenCuratedJokesIsEmpty()
 		{
 			_thenCuratedJokes.Should().BeEquivalentTo(new CuratedJokes());
+		}
+		private void ThenJokeLengthIs(int expectedJokeLength, string joke)
+		{
+			_thenJokeLength.Should().Be(expectedJokeLength,joke);
+		}
+		private void ThenExpectedStringIsReturned(string expectedEmphasizedJoke, string because)
+		{
+			_thenEmphasizedTerm.Should().Be(expectedEmphasizedJoke, because);
+		}
+
+		private void ThenCuratedJokesArGroupedAsExpected(int expectdShortJokeCount, int expextedMediumJokeCount,
+			int expectedLongJokeCount)
+		{
+			_thenCuratedJokes.Short.Count.Should().Be(expectdShortJokeCount);
+			_thenCuratedJokes.Medium.Count.Should().Be(expextedMediumJokeCount);
+			_thenCuratedJokes.Long.Count.Should().Be(expectedLongJokeCount);
+		}
+
+		#endregion
+
+		#region setup
+
+		private IJokeHttpClient _httpClient;
+		private JokesHandler _curatedHandler;
+		private ILogger<JokesHandler> _logger;
+		private List<JokeIncoming> _givenJokes;
+		private CuratedJokes _thenCuratedJokes;
+		private string _givenTerm = "default";
+		private string _thenEmphasizedTerm;
+
+		[SetUp]
+		public void Setup()
+		{
+			_givenJokes = new List<JokeIncoming>();
+			_logger = new Mock<ILogger<JokesHandler>>().Object;
+			_httpClient = new Mock<IJokeHttpClient>().Object;
+			_curatedHandler = new JokesHandler(_logger, _httpClient);
 		}
 
 		private static object[] _jokeGroupingTestCases =
@@ -167,12 +216,9 @@ namespace Joked.Test.Controllers
 		private readonly JokeIncoming _shortJoke = new JokeIncoming{Text = JokeLength9};
 		private readonly JokeIncoming _mediumJoke = new JokeIncoming { Text = JokeLength11 };
 		private readonly JokeIncoming _longJoke = new JokeIncoming { Text =JokeLength21 };
-		
+		private string _givenJoke;
+		private int _thenJokeLength;
 
-
-		//const string NewLineCharJokes = new JokeIncoming { Text = "Why did Mozart kill all his chickens?\r\nBecause when he asked them who the best composer was, they'd all say \"Bach bach bach!\"\r\n" };
-
-
+		#endregion
 	}
-
 }

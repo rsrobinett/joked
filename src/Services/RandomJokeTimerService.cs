@@ -1,6 +1,7 @@
 ﻿using Joked.Model;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Linq.Expressions;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,11 +39,23 @@ namespace Joked.Services
 		{
 			if (cancellationToken.IsCancellationRequested) return;
 
-			var result = GetRandomJoke().Result.Replace(@"\r\n", " ");
+			IJoke joke = new JokeIncoming(){Text = FallbackJoke};
 
-			var joke = JsonSerializer.Deserialize<JokeIncoming>(result) as IJoke;
+			try
+			{
+				var result = GetRandomJoke().Result;
 
-			DisplayRandomJoke(HttpUtility.UrlDecode(joke?.Text ?? FallbackJoke)).Wait(cancellationToken);
+				joke = JsonSerializer.Deserialize<JokeIncoming>(result.Replace(@"\r\n", " "));
+			}
+			catch(Exception x)
+			{
+				_logger.LogError(x, "unable to get a joke from the server");
+			}
+			finally
+			{
+				
+				DisplayRandomJoke(HttpUtility.UrlDecode(joke?.Text ?? FallbackJoke)).Wait(cancellationToken);
+			}
 		}
 
 		public async Task<string> GetRandomJoke()
@@ -52,7 +65,7 @@ namespace Joked.Services
 
 		private async Task DisplayRandomJoke(string joke)
 		{
-			_logger.Log(LogLevel.Critical, "sending:" + joke);
+			_logger.Log(LogLevel.Information, "sending:" + joke);
 			
 			await _hubContext.Clients.All.SendAsync("randomJoke", joke);
 		}

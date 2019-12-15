@@ -1,0 +1,28 @@
+<h2>Curated Jokes</h2>
+
+<form class="form-inline" (ngSubmit)="requestCuratedJokes()" [formGroup]="form">
+  <div class="form-group mx-sm-6">
+    <input type="text" class="form-control mb-2" placeholder="search term" formControlName="searchTerm" />
+  </div>
+  <button type="submit" [disabled]="form.invalid" class="btn btn-primary mb-2">
+    Search
+  </button>
+</form>
+
+<mat-tab-group *ngIf="curatedJokes$ | async as jokes">
+  <mat-tab label="Short">
+    <ul *ngFor="let joke of jokes.short">
+      <li innerHtml="{{joke | highlight:searchTerm}}"></li>
+    </ul>
+  </mat-tab>
+  <mat-tab label="Medium">
+    <ul *ngFor="let joke of jokes.medium">
+      <li innerHtml="{{joke | highlight:searchTerm}}"></li>
+    </ul>
+  </mat-tab>
+  <mat-tab label="Long">
+    <ul *ngFor="let joke of jokes.long">
+      <li innerHtml="{{joke | highlight:searchTerm}}"></li>
+    </ul>
+  </mat-tab>
+</mat-tab-group>

@@ -8,22 +8,28 @@ namespace Joked.Model
 		[JsonPropertyName("jokes")]
 		IJoke[] Jokes { get; set; }
 	}
-	public class JokesIncoming 
+	internal class JokesIncoming 
 	{
 		[JsonPropertyName("results")]
-		//[JsonConverter(typeof(JokeConverter))] //failed attempt
 		public JokeIncoming[] Jokes { get; set; }
 	}
 
-	public class JokesWrapper : IJokes
-	{
-		public IJoke[] Jokes { get; set; }
-	}
-	
+	/// <summary>
+	/// List of jokes curated in to 3 groups short medium and long
+	/// </summary>
 	public class CuratedJokes
 	{
+		/// <summary>
+		/// Short jokes <![CDATA[<10 words]]>
+		/// </summary>
 		public List<string> Short { get; set; }
+		/// <summary>
+		/// Medium Joke <![CDATA[<20 words ]]>
+		/// </summary>
 		public List<string> Medium { get; set; }
+		/// <summary>
+		/// Long jokes >= 20 words
+		/// </summary>
 		public List<string> Long { get; set; }
 
 		public CuratedJokes()

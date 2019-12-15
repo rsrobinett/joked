@@ -93,7 +93,6 @@ namespace Joked
 			{
 				endpoints.MapControllers();
 				endpoints.MapHub<JokeHub>("/randomjokes");
-				//endpoints.MapHub<JokeHub>("/coolmessages");
 			});
 		}
 	}
