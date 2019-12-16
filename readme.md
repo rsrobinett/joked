@@ -60,7 +60,7 @@ dotnet test
 
 ## Dependencies
 You will need to have the following at a minimum
-* dotnet 3.0
+* dotnet 3
 * angular cli
 * node
 * npm 
