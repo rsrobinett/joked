@@ -15,9 +15,9 @@ to start the backend and
 ```
 npm start --prefix .\ui\
 ```
-to start the frontend
+to start the frontend.
 
-checkout the webpage here 
+You can view the webpage here 
 ```
 http://localhost:4200/
 ```
@@ -64,3 +64,6 @@ You will need to have the following at a minimum
 * angular cli
 * node
 * npm 
+
+## Afterward
+Thanks for looking at my project.  I hope that I have the chance to talk about the this work.  
