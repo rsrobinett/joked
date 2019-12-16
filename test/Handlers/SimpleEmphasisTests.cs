@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace Joked.Test.Handlers
 {
-	class EmphasizerTests
+	class SimpleEmphasisTests
 	{
 	
 		[Test]
@@ -17,23 +17,19 @@ namespace Joked.Test.Handlers
 		[TestCase("1 2 3 4", "2", "*", "*", "1 *2* 3 4")]
 		[TestCase("Hello today is a good day to say hello!", "hello", "*", "*", "*Hello* today is a good day to say *hello*!")]
 		[TestCase("Well hello there.", "Hello", "*", "*", "Well *hello* there.")]
-		[TestCase("What a wonderful day.", "a", "*", "*", "What *a* wonderful day.")]
-		[TestCase("I'm Okay, I say.", "I", "*", "*", "I'm Okay, *I* say.")]
+		[TestCase("What a wonderful day.", "a", "*", "*", "Wh*a*t *a* wonderful d*a*y.")]
+		[TestCase("I'm Okay, I say.", "I", "*", "*", "*I*'m Okay, *I* say.")]
 		[TestCase("I'm Okay, I say.", "I'm", "*", "*", "*I'm* Okay, I say.")]
-		[TestCase("www.degreed.com degreed.", "degreed", "*", "*", "www.degreed.com *degreed*.")]
-		[TestCase("Me enjoy a good pick-me-up first thing in the morning", "me", "*", "*", "*Me* enjoy a good pick-me-up first thing in the morning")]
-		[TestCase("Hello", "hello hel llo", "*", "*", "*Hello*")]
+		[TestCase("www.degreed.com degreed.", "degreed", "*", "*", "www.*degreed*.com *degreed*.")]
+		[TestCase("Me enjoy a good pick-me-up first thing in the morning", "me", "*", "*", "*Me* enjoy a good pick-*me*-up first thing in the morning")]
 		[TestCase("Hello", "llo", "*", "*", "He*llo*")]
 		[TestCase("Hello", "Hel", "*", "*", "*Hel*lo")]
 		[TestCase("Hello", "ello", "*", "*", "H*ello*")]
-		[TestCase("Hello my name is", "nam is llo m hello", "*", "*", "*Hello* my *nam*e *is*")]
 		[TestCase("Hello my name is", "", "*", "*", "Hello my name is")]
 		[TestCase("Hello!", "llo", "*", "*", "He*llo*!")]
 		[TestCase("I!", "i", "*", "*", "*I*!")]
-		[TestCase("Password", "pass sword", "*", "*", "*Password*")]
-		[TestCase("Password", "pass ord", "*", "*", "*Pass*w*ord*")]
-		[TestCase("Passwords", "pass ord", "*", "*", "*Pass*words")]
-		[TestCase("Passwordsverylongstringofwords", "pass ords", "*", "*", "*Pass*wordsverylongstringofw*ords*",Ignore = "Very edge case. Only happens when a search term is at the end or beginning of a word and in the middle of the word.")]
+		[TestCase("Long phrases should be matched also", "phrases shoulD be matched", "*", "*", "Long *phrases should be matched* also")]
+		[TestCase("Near matches won't emphasize", "near matches wont emphasize", "*", "*", "Near matches won't emphasize")]
 		public void ShouldEmphasizeSearchTerm(string givenJoke, string givenTerm, string beginEmph, string endEmph, string expectedEmphasizedJoke)
 		{
 
@@ -44,7 +40,7 @@ namespace Joked.Test.Handlers
 
 		private void WhenEmphasizeTermsCalled(string jokeText, string term, string beginEmphasis, string endEmphasis)
 		{
-			_thenEmphasizedTerm = _emphasizer.Emphasize(jokeText, term, beginEmphasis, endEmphasis);
+			_thenEmphasizedTerm = _simpleEmphasis.Emphasize(jokeText, term, beginEmphasis, endEmphasis);
 		}
 
 		private void ThenExpectedStringIsReturned(string expectedEmphasizedJoke, string because)
@@ -55,10 +51,10 @@ namespace Joked.Test.Handlers
 		[SetUp]
 		public void Setup()
 		{ 
-			_emphasizer = new Emphasizer();
+			_simpleEmphasis = new SimpleEmphasis();
 		}
 
-		private Emphasizer _emphasizer;
+		private SimpleEmphasis _simpleEmphasis;
 		private string _thenEmphasizedTerm;
 	}
 }

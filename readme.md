@@ -33,32 +33,38 @@ dotnet test
 ```
 
 ### Testing notes
-* Tests for word count and emphasizing term are very robust.  A couple of edgecases are commented out for word count, but I want to make it clear that I know it's happening. '
-* Tests for Display timer and joke count are not functioning and are ingored due to dificulties with testing asyncronous methods.  I'd love feedback if you know how to acheive this.  '
+
+* Tests for word count and emphasizing term are very robust.  
+* Tests for Display timer and joke count are not functioning and are ingored due to dificulties with testing asyncronous methods.  I'd love feedback if you know how to acheive this.
 
 ## How to exercise the requirements
 
 ### Requirement 1: Random joke
+
 * On the frontend navigate to http://localhost:4200/#/random and view the random joke. This is piped through signalR from a background service. 
 * On the backend you can see this happening on the console from which you run dotnet run in the getting started steps. 
 
 ### Requirement 2: Curated Joke
-* On the frontend navigate to http://localhost:4200/#/curated and enter a search term.  Click the tab for short, medium or long joke. Note that while the search term remains in the searchbox all occurences of the exact term are highlighted. 
-* On the backend you can see the emphasized text in action by calling jokes endpoint with `curate` and `empasize` flags set to true.  In this case the emphasis begins with * and ends with &.  This endpoint emphasizes all terms as separate searches.  It emphasizes terms in the results that were responsible for the joke being in the results.  For example, if "he" is entered it will highlight the whole word "he", but not the "he" in the word "the".  I recomend hitting https://localhost:5001/api/Jokes?term=a%20pass%20sword&curate=true&limit=30&emphasize=true to see this in action.  You can observe that eventhough pass and sword are both supplied and overlapp the whole word is emphasized.  
 
-** backwards engineered search algorithm that is implemented for emphasizing on the backend
-*** For 1 or 2 character search terms only full words ie(I, a, we, he)
-*** For 3 or more character search terms they must be at the begining or end (not middle) of a word.
-*** If multiple terms, all are searched for individually with the above criteria
+* On the frontend navigate to http://localhost:4200/#/curated and enter a search term.  Click the tab for short, medium or long joke. Note that while the search term remains in the searchbox all occurences of the exact term are highlighted. 
+* On the backend you can see the emphasized text in action by calling jokes endpoint with `curate` and `empasize` flags set to true.  In this case the emphasis begins with * and ends with &. 
 
 ## Other notes
-* There is some ambiguity around the following:
+
+* Ambiguities
 ** What is considered a word for counting?
-** Should the search term be highlight if the term didn't result in the joke being included in the search results.  For example, searching for "he" would bring up a joke containing the full word "he", but not "the". Likely "he" and "the" would both be in the joke and should they be highlited as "*he*" and "t*he*", or should just "*he*" be highlighted?
-* In the case of ambiguities I picked a solution that seemed reasonable, but also challengeing since it is a code *challenge*.  For the case of highlighting a term, I implemented it 2 ways to make sure that I was covering the requirments as stated. The frontend is as stated, the backend is the challenging part.    
-* I used the latest and the greates (in  LTS) dotnet core 3.1 release earlier this month.  
+*** Are numbers considered words?  For example, "There are 7 days in week."  Is "7" considered a word?
+*** Is a grawlix (!@#$%) considered a word?  For example, in the phrase "To #*!! with good intentions!"  Is " #*!!"  considered to be a word?
+*** Are words with an emphasis dash (--)  in the middle considered 2 words? For example, "One thing's for sure--Degreed is a great place to work."  In this example, is "sure--Degreed" 2 words or 1?
+*** Are groups of letters with punctuation in the middle other than an emphasis dash are considered 1 word?  For example, is "www.degreed.com" 1 word; and in the phrase "I enjoy a good pick-me-up first thing in the morning" is the string "pick-me-up"?  
+*** Are Groups of the same punctuation a word? For example,  !!! and ... .
+** How should I handler search terms with multiple words? 
+*** The simple implementation is only replace the full string and this fulfills the requirement, but if seems that it is not helpful as searching for ice cream will return words with just cream and just ice.  None of these will be emphasized because it only empasizes exact strings. 
+*** The ideal emphasis algorithm would emphasize all the words that resulted in the joke being included in the query. This algorithm is much more complicated and tricky to follow as it gets down to the char level. 
+*** In this project I did the simple implementation to keep the project cleaner and easier to follow, plus I believe it fullfills the requirements.  The frontend also employs the simple solution.  If you are intereseted in the challenging algorithm, please check out this branch https://github.com/rsrobinett/joked/tree/OverThoughtIt. I have implemented the IEmphasize class to follow the search algorithm so that the terms resulting in the joke being included in the query are emphasized.  It was a fun and difficult challenge with an impressive set of test cases; I hope you get a chance to take a look at it.
 
 ## Dependencies
+
 You will need to have the following at a minimum
 * dotnet 3
 * angular cli
@@ -66,4 +72,5 @@ You will need to have the following at a minimum
 * npm 
 
 ## Afterward
-Thanks for looking at my project.  I hope that I have the chance to talk about the this work.  
+
+Thanks for looking at my project.

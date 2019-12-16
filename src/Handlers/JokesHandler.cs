@@ -20,10 +20,10 @@ namespace Joked.Handlers
 		{
 			_logger = logger;
 			_httpClient = client;
-			_emphasizer = emphasizer ?? new Emphasizer();
+			_emphasizer = emphasizer ?? new SimpleEmphasis();
 		}
 
-		public CuratedJokes CurateJokes(JokeDto[] jokes, string term, bool shouldEmphasize = false)
+		public ICuratedJokes CurateJokes(JokeDto[] jokes, string term, bool shouldEmphasize = false)
 		{
 			if (jokes == null)
 			{
@@ -41,8 +41,10 @@ namespace Joked.Handlers
 			{
 				Short = jokesText?.Where(x => LengthOfJoke(x) < MediumJokeMinLength)
 					.Select(x =>TryEmphasize(term, shouldEmphasize, x)).ToList(),
+				
 				Medium = jokesText?.Where(x => LengthOfJoke(x) >= MediumJokeMinLength && LengthOfJoke(x) < LongJokeMinLength)
 					.Select(x => TryEmphasize(term, shouldEmphasize, x)).ToList(),
+				
 				Long = jokesText?.Where(x => LengthOfJoke(x) >= LongJokeMinLength).
 					Select(x => TryEmphasize(term, shouldEmphasize, x))
 					.ToList()
@@ -50,9 +52,9 @@ namespace Joked.Handlers
 			return curatedJokes;
 		}
 
-		private string TryEmphasize(string term, bool shouldEmphasize, string x)
+		private string TryEmphasize(string term, bool shouldEmphasize, string joke)
 		{
-			return shouldEmphasize ? _emphasizer.Emphasize(x, term) : x;
+			return shouldEmphasize ? _emphasizer.Emphasize(joke, term) : joke;
 		}
 
 		public JokesDto GetJokes(string term, int limit)
@@ -71,7 +73,7 @@ namespace Joked.Handlers
 
 	internal interface IJokesHandler
 	{
-		CuratedJokes CurateJokes(JokeDto[] jokes, string term, bool shouldEmphasize);
+		ICuratedJokes CurateJokes(JokeDto[] jokes, string term, bool shouldEmphasize);
 		JokesDto GetJokes(string term, int limit);
 	}
 }

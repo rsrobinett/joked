@@ -1,6 +1,4 @@
 ﻿using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Joked.Controllers;
 using Joked.Handlers;
@@ -19,7 +17,7 @@ namespace Joked.Test.Controllers
 		private Mock<ILogger<JokesController>> _loggerMock;
 		private Mock<IJokesHandler> _jokesHandlerMock;
 
-		[Test, Ignore("this is really an integration test, definitely struggling with testing async")]
+		[Test, Ignore("Integration Test.  I'd love suggestions for testing a controller with asyncronous code'")]
 		public void ShouldAllowMoreThanTheLimit()
 		{
 			var limit = 30;
@@ -27,7 +25,7 @@ namespace Joked.Test.Controllers
 			var logger = new Logger<JokesController>(loggerFactory);
 			var httpClient = new HttpClient();
 			var jokeHttpClient = new JokeHttpClient(httpClient);
-			var jokeHandler = new JokesHandler(logger, jokeHttpClient, new Emphasizer());
+			var jokeHandler = new JokesHandler(logger, jokeHttpClient, new SimpleEmphasis());
 
 			var jokesController = new JokesController(jokeHttpClient,logger,jokeHandler);
 
@@ -36,7 +34,7 @@ namespace Joked.Test.Controllers
 			TotalCuratedJokes(x).Should().Be(limit); 
 		}
 
-		private static int TotalCuratedJokes(ActionResult<CuratedJokes> x)
+		private static int TotalCuratedJokes(ActionResult<ICuratedJokes> x)
 		{
 			return x.Value.Long.Count + x.Value.Medium.Count + x.Value.Short.Count;
 		}

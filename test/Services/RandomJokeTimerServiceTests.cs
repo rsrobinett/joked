@@ -20,7 +20,7 @@ namespace Joked.Test.Services
 		private Mock<IHubContext<JokeHub>> _hubMock;
 		private CancellationTokenSource _ctxS;
 		
-		[Test, Ignore("Tasks are tough to test.  I'd love suggestions on how you would test something like this.  I know it works from manual testing.")]
+		[Test, Ignore("I'd love suggestions on how you test async code.")]
 		public async Task ShouldDisplayJoke2Or3TimesIn25Seconds()
 		{
 			_ctxS = new CancellationTokenSource();

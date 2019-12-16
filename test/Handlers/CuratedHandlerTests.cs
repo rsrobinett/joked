@@ -135,7 +135,7 @@ namespace Joked.Test.Handlers
 		private JokesHandler _curatedHandler;
 		private ILogger<JokesHandler> _logger;
 		private List<JokeDto> _givenJokes;
-		private CuratedJokes _thenCuratedJokes;
+		private ICuratedJokes _thenCuratedJokes;
 		private string _givenTerm = "default";
 		private string _thenEmphasizedTerm;
 

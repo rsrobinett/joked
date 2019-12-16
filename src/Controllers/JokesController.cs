@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using Joked.Handlers;
 using Joked.Model;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -36,7 +37,10 @@ namespace Joked.Controllers
 		/// https://icanhazdadjoke.com/api
 		/// </remarks>
 		[HttpGet("")]
-		public ActionResult<CuratedJokes> GetJokes([FromQuery] string term, [FromQuery] bool curate = true, [FromQuery] int limit = 30, [FromQuery] bool emphasize = false)
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+		[ProducesResponseType(StatusCodes.Status501NotImplemented)]
+		public ActionResult<ICuratedJokes> GetJokes([FromQuery] string term, [FromQuery] bool curate = true, [FromQuery] int limit = 30, [FromQuery] bool emphasize = false)
 		{
 			var (result, isValid) = ValidateRequest(term, curate);
 			if (!isValid)
@@ -47,7 +51,7 @@ namespace Joked.Controllers
 			try
 			{
 				var jokes = _jokesHandler.GetJokes(term, limit);
-				var ensureLimit = jokes.Jokes.Take(limit).ToArray();
+				var ensureLimit = jokes?.Jokes?.Take(limit).ToArray();
 				var curatedJokes = _jokesHandler.CurateJokes(ensureLimit, term, emphasize);
 
 				return Ok(curatedJokes);
@@ -55,7 +59,7 @@ namespace Joked.Controllers
 			catch (Exception x)
 			{
 				_logger.Log(LogLevel.Error, x, "Request Failed For unknown reason");
-				return StatusCode((int) HttpStatusCode.InternalServerError);
+				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
 
@@ -73,7 +77,7 @@ namespace Joked.Controllers
 			if (!curate)
 			{
 				_logger.Log(LogLevel.Information, notSupportedErrorMessage);
-				return (StatusCode(501, notSupportedErrorMessage), false);
+				return (StatusCode(StatusCodes.Status501NotImplemented, notSupportedErrorMessage), false);
 			}
 
 			if (string.IsNullOrWhiteSpace(term))

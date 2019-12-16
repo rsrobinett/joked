@@ -15,24 +15,46 @@
             https://icanhazdadjoke.com/api
             </remarks>
         </member>
-        <member name="T:Joked.Model.CuratedJokes">
+        <member name="T:Joked.Handlers.IEmphasize">
+            <summary>
+            Adds Emphasis strings around the search term.
+            </summary>
+        </member>
+        <member name="T:Joked.Handlers.SimpleEmphasis">
+            <summary>
+            Adds Emphasis strings around the search term.
+            It finds the whole term in the string and replaces the whole term if it exists.
+            If the string is multiple terms long, it replaces the string only when there is an exact match including whitespace for the search term.
+            </summary>
+        </member>
+        <member name="T:Joked.Model.ICuratedJokes">
             <summary>
             List of jokes curated in to 3 groups short medium and long
             </summary>
         </member>
-        <member name="P:Joked.Model.CuratedJokes.Short">
+        <member name="P:Joked.Model.ICuratedJokes.Short">
             <summary>
             Short jokes <![CDATA[<10 words]]>
             </summary>
         </member>
-        <member name="P:Joked.Model.CuratedJokes.Medium">
+        <member name="P:Joked.Model.ICuratedJokes.Medium">
             <summary>
             Medium Joke <![CDATA[<20 words ]]>
             </summary>
         </member>
-        <member name="P:Joked.Model.CuratedJokes.Long">
+        <member name="P:Joked.Model.ICuratedJokes.Long">
             <summary>
             Long jokes >= 20 words
+            </summary>
+        </member>
+        <member name="T:Joked.Model.IJokes">
+            <summary>
+            Object received from the joke server 
+            </summary>
+        </member>
+        <member name="P:Joked.Model.IJokes.Jokes">
+            <summary>
+            List of Jokes
             </summary>
         </member>
     </members>
