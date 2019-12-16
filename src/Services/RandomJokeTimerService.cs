@@ -30,11 +30,11 @@ namespace Joked.Services
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
 			_timer = new Timer(o => RandomJokeTask(o, cancellationToken), null, TimeSpan.Zero, TimeSpan.FromSeconds(TimerFrequencySeconds));
-
+			
 			return Task.CompletedTask;
 		}
 
-		public void RandomJokeTask(object state, CancellationToken cancellationToken = default)
+		private void RandomJokeTask(object state, CancellationToken cancellationToken = default)
 		{
 			if (cancellationToken.IsCancellationRequested) return;
 
@@ -42,9 +42,8 @@ namespace Joked.Services
 
 			try
 			{
-				var result = GetRandomJoke().Result;
+				joke = GetRandomJoke();
 
-				joke = JsonSerializer.Deserialize<JokeDto>(result.Replace(@"\r\n", " "));
 			}
 			catch(Exception x)
 			{
@@ -52,17 +51,18 @@ namespace Joked.Services
 			}
 			finally
 			{
-				
 				DisplayRandomJoke(HttpUtility.UrlDecode(joke?.Joke ?? FallbackJoke)).Wait(cancellationToken);
 			}
 		}
 
-		public async Task<string> GetRandomJoke()
+		internal virtual JokeDto GetRandomJoke()
 		{
-			return await _httpClient.Get("/");
+			var result = _httpClient.Get("/").Result;
+			var joke = JsonSerializer.Deserialize<JokeDto>(result.Replace(@"\r\n", " "));
+			return joke;
 		}
 
-		private async Task DisplayRandomJoke(string joke)
+		internal virtual async Task DisplayRandomJoke(string joke)
 		{
 			_logger.Log(LogLevel.Information, "sending:" + joke);
 			

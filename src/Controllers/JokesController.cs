@@ -4,7 +4,6 @@ using System.Net;
 using Joked.Handlers;
 using Joked.Model;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace Joked.Controllers
@@ -13,20 +12,16 @@ namespace Joked.Controllers
 	[Route("api/[controller]")]
 	public class JokesController : ControllerBase
 	{
-		private readonly IJokeHttpClient _httpClient;
 		private readonly ILogger<JokesController> _logger;
 		private readonly IJokesHandler _jokesHandler;
-		private readonly IHubContext<JokeHub> _hub;
 
-		internal JokesController(IJokeHttpClient client, ILogger<JokesController> logger, IJokesHandler jokesHandler, IHubContext<JokeHub> hub)
+		internal JokesController(IJokeHttpClient client, ILogger<JokesController> logger, IJokesHandler jokesHandler)
 		{
 			_jokesHandler = jokesHandler;
-			_httpClient = client;
 			_logger = logger;
-			_hub = hub;
 		}
 
-		public JokesController(IJokeHttpClient client, ILogger<JokesController> logger, IHubContext<JokeHub> hub) : this(client, logger, new JokesHandler(logger, client), hub)
+		public JokesController(IJokeHttpClient client, ILogger<JokesController> logger) : this(client, logger, new JokesHandler(logger, client))
 		{
 		
 		}
@@ -52,7 +47,8 @@ namespace Joked.Controllers
 			try
 			{
 				var jokes = _jokesHandler.GetJokes(term, limit);
-				var curatedJokes = _jokesHandler.CurateJokes(jokes.Jokes, term, emphasize);
+				var ensureLimit = jokes.Jokes.Take(limit).ToArray();
+				var curatedJokes = _jokesHandler.CurateJokes(ensureLimit, term, emphasize);
 
 				return Ok(curatedJokes);
 			}

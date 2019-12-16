@@ -32,6 +32,8 @@ namespace Joked.Test.Handlers
 		[TestCase("I!", "i", "*", "*", "*I*!")]
 		[TestCase("Password", "pass sword", "*", "*", "*Password*")]
 		[TestCase("Password", "pass ord", "*", "*", "*Pass*w*ord*")]
+		[TestCase("Passwords", "pass ord", "*", "*", "*Pass*words")]
+		[TestCase("Passwordsverylongstringofwords", "pass ords", "*", "*", "*Pass*wordsverylongstringofw*ords*",Ignore = "Very edge case. Only happens when a search term is at the end or beginning of a word and in the middle of the word.")]
 		public void ShouldEmphasizeSearchTerm(string givenJoke, string givenTerm, string beginEmph, string endEmph, string expectedEmphasizedJoke)
 		{
 

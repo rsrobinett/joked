@@ -23,8 +23,8 @@ namespace Joked.Handlers
 		internal string Emphasize(string jokeText, string term, string beginEmphasis,
 	string endEmphasis)
 		{
-			//search algorithm works like this
-			//1 or 2 letters only full words ie(I, a, ah, we)
+			//backwards engineered search algorithm
+			//1 or 2 letters only full words ie(I, a, we, he)
 			//3 + beginning or end(no middle of word)
 			//if multiple terms, all are searched for individually
 
