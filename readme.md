@@ -27,19 +27,16 @@ https://localhost:5001/swagger
 ```
 ## Running the tests
 
-To run the test from the root run
+To run backend tests from the root run
 ```
 dotnet test
 ```
-To run the tests for the fron end run, but I didn't put any concentration here and they are not passing
-```
-npm test --prefix .\ui\ 
-```
-###Testing notes
+
+### Testing notes
 * Tests for word count and emphasizing term are very robust.  A couple of edgecases are commented out for word count, but I want to make it clear that I know it's happening. '
 * Tests for Display timer and joke count are not functioning and are ingored due to dificulties with testing asyncronous methods.  I'd love feedback if you know how to acheive this.  '
 
-##How to exercise the requirements
+## How to exercise the requirements
 
 ### Requirement 1: Random joke
 * On the frontend navigate to http://localhost:4200/#/random and view the random joke. This is piped through signalR from a background service. 
@@ -47,11 +44,12 @@ npm test --prefix .\ui\
 
 ### Requirement 2: Curated Joke
 * On the frontend navigate to http://localhost:4200/#/curated and enter a search term.  Click the tab for short, medium or long joke. Note that while the search term remains in the searchbox all occurences of the exact term are highlighted. 
-* On the backend you can see the emphasized text in action by calling jokes endpoint with `curate` and `empasize` flags set to true.  In this case the emphasis begin is * and end is &.  This endpoint emphasizes all terms individiually, it only emphasizes terms in the results that were responsible for the joke being in the results.  For example, if "he" is entered it will highlight the whole word "he", but not the "he" in the word "the".  I recomend hitting ```https://localhost:5001/api/Jokes?term=a%20pass%20sword&curate=true&limit=30&emphasize=true``` to see this in action.
+* On the backend you can see the emphasized text in action by calling jokes endpoint with `curate` and `empasize` flags set to true.  In this case the emphasis begins with * and ends with &.  This endpoint emphasizes all terms as separate searches.  It emphasizes terms in the results that were responsible for the joke being in the results.  For example, if "he" is entered it will highlight the whole word "he", but not the "he" in the word "the".  I recomend hitting https://localhost:5001/api/Jokes?term=a%20pass%20sword&curate=true&limit=30&emphasize=true to see this in action.  You can observe that eventhough pass and sword are both supplied and overlapp the whole word is emphasized.  
+
 ** backwards engineered search algorithm that is implemented for emphasizing on the backend
-***For 1 or 2 character search terms only full words ie(I, a, we, he)
-***For 3 or more character search terms they must be at the begining or end (not middle) of a word.
-***If multiple terms, all are searched for individually with the above criteria
+*** For 1 or 2 character search terms only full words ie(I, a, we, he)
+*** For 3 or more character search terms they must be at the begining or end (not middle) of a word.
+*** If multiple terms, all are searched for individually with the above criteria
 
 ## Other notes
 * There is some ambiguity around the following:
