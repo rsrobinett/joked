@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
 using Joked.Handlers;
 using Joked.Model;
 using Microsoft.AspNetCore.Http;

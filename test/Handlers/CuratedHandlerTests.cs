@@ -137,7 +137,6 @@ namespace Joked.Test.Handlers
 		private List<JokeDto> _givenJokes;
 		private ICuratedJokes _thenCuratedJokes;
 		private string _givenTerm = "default";
-		private string _thenEmphasizedTerm;
 
 		[SetUp]
 		public void Setup()

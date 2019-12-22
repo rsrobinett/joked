@@ -29,10 +29,11 @@ namespace Joked.Services
 
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
-			_timer = new Timer(o => RandomJokeTask(o, cancellationToken), null, TimeSpan.Zero,
+			var timerTask = Task.Run(() =>
+			{
+				_timer = new Timer(o => RandomJokeTask(o, cancellationToken), null, TimeSpan.Zero,
 					TimeSpan.FromSeconds(TimerFrequencySeconds));
-
-			cancellationToken.WaitHandle.WaitOne();
+			}, cancellationToken);
 
 			return Task.CompletedTask;
 		}

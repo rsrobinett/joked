@@ -23,7 +23,7 @@ namespace Joked.Test.Services
 		[TestCase(15, 1, 2)]
 		[TestCase(25, 2, 3)]
 		[TestCase(35, 3, 4)]
-		public async  Task ShouldDisplayJokeOnARotation(int secondsToRun, int minExpectedCount,int maxExpectedCount)
+		public async Task ShouldDisplayJokeOnARotation(int secondsToRun, int minExpectedCount,int maxExpectedCount)
 		{
 			GivenTheServiceRunsForSeconds(secondsToRun);
 			ThenJokesDisplayedIsBetween(minExpectedCount, maxExpectedCount);
@@ -39,7 +39,12 @@ namespace Joked.Test.Services
 
 		private void GivenTheServiceRunsForSeconds(int secondsToRun)
 		{
-			Task.Run(() => _randomJokeServiceMock.Object.StartAsync(_ctxS.Token), _ctxS.Token).Wait(secondsToRun * 1000);
+
+			_ctxS.CancelAfter(secondsToRun * 1000);
+			_randomJokeServiceMock.Object.StartAsync(_ctxS.Token); 
+			
+			_ctxS.Token.WaitHandle.WaitOne();
+
 		}
 
 		[SetUp]

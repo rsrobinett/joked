@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Linq;
+using System.Text.RegularExpressions;
 using static System.String;
 
 namespace Joked.Handlers
@@ -38,6 +39,51 @@ namespace Joked.Handlers
 			string LocalReplaceMatchCase(Match matchExpression)
 			{
 				return $"{_beginEmphasis}{matchExpression.Value}{_endEmphasis}";
+			}
+		}
+	}
+
+	internal class RegexAdvancedEmphasis : IEmphasize
+	{
+		private string _beginEmphasis = @"*";
+		private string _endEmphasis = @"&";
+
+		public string Emphasize(string jokeText, string term)
+		{
+			return Emphasize(jokeText, term, _beginEmphasis, _endEmphasis);
+		}
+
+		internal string Emphasize(string jokeText, string term, string beginEmphasis, string endEmphasis)
+		{
+			if (IsNullOrWhiteSpace(term)) return jokeText;
+
+			_beginEmphasis = !IsNullOrWhiteSpace(beginEmphasis) ? beginEmphasis : _beginEmphasis;
+			_endEmphasis = !IsNullOrWhiteSpace(endEmphasis) ? endEmphasis : _endEmphasis;
+			
+			return Regex.Replace(jokeText, LocalReplacementRegex(term), LocalReplaceMatchCase, RegexOptions.IgnoreCase);
+
+
+			string LocalReplaceMatchCase(Match matchExpression)
+			{
+				return $"{_beginEmphasis}{matchExpression.Value}{_endEmphasis}";
+			}
+
+			string LocalReplacementRegex(string localTerm)
+			{
+				var termList = localTerm.Split(' ');
+				var regexToReplace = "(?:";
+				foreach (var word in termList)
+				{
+					regexToReplace += $@"\b{word}|{word}\b";
+					
+					if (word != termList.Last())
+					{
+						regexToReplace += "|";
+					}
+				}
+				regexToReplace += ")";
+
+				return regexToReplace;
 			}
 		}
 	}

@@ -37,7 +37,7 @@ namespace Joked.Test
 
 		private string JokeString(int minLength = 5, int maxLength = 30)
 		{
-			var length = new Random(DateTime.Now.Second).Next(maxLength,maxLength);
+			var length = new Random(DateTime.Now.Second).Next(minLength,maxLength);
 			var jokeString = word;
 
 			for (var i = 1; i < length; i++)

@@ -23,6 +23,13 @@ namespace Joked.Handlers
 			_emphasizer = emphasizer ?? new SimpleEmphasis();
 		}
 
+		public virtual JokesDto GetJokes(string term, int limit)
+		{
+			var request = _httpClient.Get($"search?limit={limit}&term={term}").Result.Replace(@"\r\n", " ");
+			var jokes = JsonSerializer.Deserialize<JokesDto>(request);
+			return jokes;
+		}
+
 		public ICuratedJokes CurateJokes(JokeDto[] jokes, string term, bool shouldEmphasize = false)
 		{
 			if (jokes == null)
@@ -40,11 +47,11 @@ namespace Joked.Handlers
 			var curatedJokes = new CuratedJokes
 			{
 				Short = jokesText?.Where(x => LengthOfJoke(x) < MediumJokeMinLength)
-					.Select(x =>TryEmphasize(term, shouldEmphasize, x)).ToList(),
-				
+					.Select(x => TryEmphasize(term, shouldEmphasize, x)).ToList(),
+
 				Medium = jokesText?.Where(x => LengthOfJoke(x) >= MediumJokeMinLength && LengthOfJoke(x) < LongJokeMinLength)
 					.Select(x => TryEmphasize(term, shouldEmphasize, x)).ToList(),
-				
+
 				Long = jokesText?.Where(x => LengthOfJoke(x) >= LongJokeMinLength).
 					Select(x => TryEmphasize(term, shouldEmphasize, x))
 					.ToList()
@@ -55,13 +62,6 @@ namespace Joked.Handlers
 		private string TryEmphasize(string term, bool shouldEmphasize, string joke)
 		{
 			return shouldEmphasize ? _emphasizer.Emphasize(joke, term) : joke;
-		}
-
-		public virtual JokesDto GetJokes(string term, int limit)
-		{
-			var request = _httpClient.Get($"search?limit={limit}&term={term}").Result.Replace(@"\r\n", " ");
-			var jokes = JsonSerializer.Deserialize<JokesDto>(request);
-			return jokes;
 		}
 
 		internal int LengthOfJoke(string phrase)
