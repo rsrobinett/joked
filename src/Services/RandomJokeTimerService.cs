@@ -29,14 +29,17 @@ namespace Joked.Services
 
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
-			_timer = new Timer(o => RandomJokeTask(o, cancellationToken), null, TimeSpan.Zero, TimeSpan.FromSeconds(TimerFrequencySeconds));
-			
+			_timer = new Timer(o => RandomJokeTask(o, cancellationToken), null, TimeSpan.Zero,
+					TimeSpan.FromSeconds(TimerFrequencySeconds));
+
+			cancellationToken.WaitHandle.WaitOne();
+
 			return Task.CompletedTask;
 		}
 
 		private void RandomJokeTask(object state, CancellationToken cancellationToken = default)
 		{
-			if (cancellationToken.IsCancellationRequested) return;
+			 if (cancellationToken.IsCancellationRequested) return;
 
 			IJoke joke = new JokeDto {Joke = FallbackJoke};
 
@@ -51,7 +54,7 @@ namespace Joked.Services
 			}
 			finally
 			{
-				DisplayRandomJoke(HttpUtility.UrlDecode(joke?.Joke ?? FallbackJoke)).Wait(cancellationToken);
+				DisplayRandomJoke(HttpUtility.UrlDecode(joke?.Joke ?? FallbackJoke), cancellationToken).Wait(cancellationToken);
 			}
 		}
 
@@ -62,11 +65,13 @@ namespace Joked.Services
 			return joke;
 		}
 
-		internal virtual async Task DisplayRandomJoke(string joke)
+		internal virtual async Task DisplayRandomJoke(string joke, CancellationToken ctx)
 		{
-			_logger.Log(LogLevel.Information, "sending:" + joke);
+			if (ctx.IsCancellationRequested) return;
+
+			_logger.Log(LogLevel.Information, $"[{DateTime.Now}] Sending Random Joke:{joke}");
 			
-			await _hubContext.Clients.All.SendAsync("randomJoke", joke);
+			await _hubContext.Clients.All.SendAsync("randomJoke", joke, ctx);
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken)

@@ -1,9 +1,8 @@
-﻿using System.Net.Http;
+﻿using System.Threading.Tasks;
 using FluentAssertions;
 using Joked.Controllers;
 using Joked.Handlers;
 using Joked.Model;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -15,39 +14,40 @@ namespace Joked.Test.Controllers
 		private JokesController _jokesController;
 		private Mock<IJokeHttpClient> _clientMock;
 		private Mock<ILogger<JokesController>> _loggerMock;
-		private Mock<IJokesHandler> _jokesHandlerMock;
+		private Mock<JokesHandler> _jokesHandlerMock;
 
-		[Test, Ignore("Integration Test.  I'd love suggestions for testing a controller with asyncronous code'")]
-		public void ShouldAllowMoreThanTheLimit()
+		[Test]
+		public void ShouldNotAllowMoreThanTheLimit()
 		{
 			var limit = 30;
-			var loggerFactory = new LoggerFactory();
-			var logger = new Logger<JokesController>(loggerFactory);
-			var httpClient = new HttpClient();
-			var jokeHttpClient = new JokeHttpClient(httpClient);
-			var jokeHandler = new JokesHandler(logger, jokeHttpClient, new SimpleEmphasis());
+			var jokesResult = _jokesController.GetJokes("a", true, limit, false);
+			var value = (ICuratedJokes)jokesResult.Value;
 
-			var jokesController = new JokesController(jokeHttpClient,logger,jokeHandler);
-
-			var x = jokesController.GetJokes("a",true,limit,false);
-
-			TotalCuratedJokes(x).Should().Be(limit); 
+			TotalCuratedJokes(value).Should().Be(limit); 
 		}
 
-		private static int TotalCuratedJokes(ActionResult<ICuratedJokes> x)
+		private static int TotalCuratedJokes(ICuratedJokes curatedJokes)
 		{
-			return x.Value.Long.Count + x.Value.Medium.Count + x.Value.Short.Count;
+			return curatedJokes.Long.Count + curatedJokes.Medium.Count + curatedJokes.Short.Count;
 		}
 
 		[SetUp]
 		public void Setup()
 		{
-			_clientMock = new Mock<IJokeHttpClient>();
-			_loggerMock = new Mock<ILogger<JokesController>>();
-			_jokesHandlerMock = new Mock<IJokesHandler>();
+			var jokes = new JokesDtoBuilder(45).Build();
+			string joskesJson = System.Text.Json.JsonSerializer.Serialize<JokesDto>(jokes);
 			
-			_loggerMock.Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsAny<string>()));
-			_jokesController = new JokesController(_clientMock.Object, _loggerMock.Object, _jokesHandlerMock.Object);
+			_clientMock = new Mock<IJokeHttpClient>();
+			_clientMock.Setup(x => x.Get(It.IsAny<string>())).Returns(Task.FromResult<string>(joskesJson));
+
+			_loggerMock = new Mock<ILogger<JokesController>>();
+			_jokesHandlerMock = new Mock<JokesHandler>(_loggerMock.Object, _clientMock.Object, null);
+			_jokesHandlerMock.Setup(x => x.GetJokes(It.IsAny<string>(),It.IsAny<int>())).Returns(jokes);
+			//_jokesHandlerMock.CallBase = true;
+			//_jokesHandlerMock.Setup(x => x.CurateJokes(It.IsAny<JokeDto[]>(), It.IsAny<string>(), It.IsAny<bool>())).CallBase();
+			//var _jokesHandler = new JokesHandler(_loggerMock.Object, _clientMock.Object);
+
+			_jokesController = new JokesController(_clientMock.Object, _loggerMock.Object, _jokesHandlerMock.Object);//_jokesHandlerMock.Object);
 		}
 
 	}

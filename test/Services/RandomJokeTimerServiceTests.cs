@@ -1,12 +1,10 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Joked.Model;
-using Joked.Services;
+﻿using Joked.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using System.Threading;
+using System.Threading.Tasks;
 using Range = Moq.Range;
 
 namespace Joked.Test.Services
@@ -20,31 +18,50 @@ namespace Joked.Test.Services
 		private Mock<IHubContext<JokeHub>> _hubMock;
 		private CancellationTokenSource _ctxS;
 		
-		[Test, Ignore("I'd love suggestions on how you test async code.")]
-		public async Task ShouldDisplayJoke2Or3TimesIn25Seconds()
+		[Test, Parallelizable, Explicit("These test too long and can be brittle based on how long  the service takes to spin up; however, they are useful for local development.")]
+		[TestCase(5, 0, 1)]
+		[TestCase(15, 1, 2)]
+		[TestCase(25, 2, 3)]
+		[TestCase(35, 3, 4)]
+		public async  Task ShouldDisplayJokeOnARotation(int secondsToRun, int minExpectedCount,int maxExpectedCount)
 		{
-			_ctxS = new CancellationTokenSource();
-			//_ctxS.CancelAfter(25000);
-			
-			var task = _randomJokeServiceMock.Object.StartAsync(_ctxS.Token);
+			GivenTheServiceRunsForSeconds(secondsToRun);
+			ThenJokesDisplayedIsBetween(minExpectedCount, maxExpectedCount);
+		}
 
-			task.Wait(new TimeSpan(0, 0, 0, seconds: 25));
-			
-			_randomJokeServiceMock.Verify(x=>x.GetRandomJoke(),Times.Between(2,3,Range.Inclusive));
-			_randomJokeServiceMock.Verify(x => x.DisplayRandomJoke(It.IsAny<string>()), Times.Between(2, 3, Range.Inclusive));
+		private void ThenJokesDisplayedIsBetween(int minExpectedCount, int maxExpectedCount)
+		{
+			_randomJokeServiceMock.Verify(x => x.GetRandomJoke(),
+				Times.Between(minExpectedCount, maxExpectedCount, Range.Inclusive));
+			_randomJokeServiceMock.Verify(x => x.DisplayRandomJoke(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+				Times.Between(minExpectedCount, maxExpectedCount, Range.Inclusive));
+		}
+
+		private void GivenTheServiceRunsForSeconds(int secondsToRun)
+		{
+			Task.Run(() => _randomJokeServiceMock.Object.StartAsync(_ctxS.Token), _ctxS.Token).Wait(secondsToRun * 1000);
 		}
 
 		[SetUp]
-		public void setup()
+		public void Setup()
 		{
+			_ctxS = new CancellationTokenSource();
+			_ctxS.CancelAfter(25000);
+			
 			_clientMock = new Mock<IJokeHttpClient>();
+			_clientMock.Setup(x => x.Get("/")).Returns(Task.FromResult<string>(""));
+
 			_loggerMock = new Mock<ILogger<RandomJokeTimerService>>();
+			
 			_hubMock = new Mock<IHubContext<JokeHub>>();
-
+			
 			_randomJokeServiceMock = new Mock<RandomJokeTimerService>(_clientMock.Object,_loggerMock.Object,_hubMock.Object);
-			_randomJokeServiceMock.Setup(x => x.GetRandomJoke()).Returns(new JokeDto() { Joke = "Random Joke" });
-			_randomJokeServiceMock.Setup(x => x.DisplayRandomJoke(It.IsAny<string>()));
+		}
 
+		[TearDown]
+		public void Teardown()
+		{
+			_randomJokeServiceMock.Object.Dispose();
 		}
 
 	}

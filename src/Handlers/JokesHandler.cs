@@ -57,7 +57,7 @@ namespace Joked.Handlers
 			return shouldEmphasize ? _emphasizer.Emphasize(joke, term) : joke;
 		}
 
-		public JokesDto GetJokes(string term, int limit)
+		public virtual JokesDto GetJokes(string term, int limit)
 		{
 			var request = _httpClient.Get($"search?limit={limit}&term={term}").Result.Replace(@"\r\n", " ");
 			var jokes = JsonSerializer.Deserialize<JokesDto>(request);
@@ -73,7 +73,7 @@ namespace Joked.Handlers
 
 	internal interface IJokesHandler
 	{
-		ICuratedJokes CurateJokes(JokeDto[] jokes, string term, bool shouldEmphasize);
+		ICuratedJokes CurateJokes(JokeDto[] jokes, string term, bool shouldEmphasize = false);
 		JokesDto GetJokes(string term, int limit);
 	}
 }

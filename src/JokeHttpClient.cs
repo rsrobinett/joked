@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Joked
 {
-	public class JokeHttpClient : IJokeHttpClient
+	public class JokeHttpClient : HttpClient, IJokeHttpClient
 	{
 		private readonly HttpClient _client;
 
@@ -22,7 +22,7 @@ namespace Joked
 		}
 	}
 
-	public interface IJokeHttpClient
+	public interface IJokeHttpClient : IDisposable
 	{
 		Task<string> Get(string uriPath = "/");
 	}
