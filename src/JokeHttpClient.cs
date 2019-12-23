@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Joked
 {
-	public class JokeHttpClient : IJokeHttpClient
+	public class JokeHttpClient : HttpClient, IJokeHttpClient
 	{
 		private readonly HttpClient _client;
 
@@ -16,13 +16,14 @@ namespace Joked
 			httpClient.DefaultRequestHeaders.Add("User-Agent", "github.com/rsrobinett");
 			_client = httpClient;
 		}
+
 		public async Task<string> Get(string uriPath = "/")
 		{
 			return await _client.GetStringAsync(uriPath);
 		}
 	}
 
-	public interface IJokeHttpClient
+	public interface IJokeHttpClient : IDisposable
 	{
 		Task<string> Get(string uriPath = "/");
 	}

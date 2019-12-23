@@ -37,4 +37,9 @@ namespace Joked.Model
 		/// </summary>
 		List<string> Long { get; set; }
 	}
+
+	public interface ICurateLongJokes
+	{
+		List<string> ExtraLong { get; set; }
+	}
 }

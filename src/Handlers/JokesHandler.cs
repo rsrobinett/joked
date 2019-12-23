@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using Joked.Model;
 using Microsoft.Extensions.Logging;
@@ -57,10 +58,12 @@ namespace Joked.Handlers
 			return shouldEmphasize ? _emphasizer.Emphasize(joke, term) : joke;
 		}
 
-		public JokesDto GetJokes(string term, int limit)
+		public async Task<JokesDto> GetJokes(string term, int limit)
 		{
-			var request = _httpClient.Get($"search?limit={limit}&term={term}").Result.Replace(@"\r\n", " ");
-			var jokes = JsonSerializer.Deserialize<JokesDto>(request);
+
+			var request = await _httpClient.Get($"search?limit={limit}&term={term}");
+
+			var jokes = JsonSerializer.Deserialize<JokesDto>(request.Replace(@"\r\n", " "));
 			return jokes;
 		}
 
@@ -74,6 +77,6 @@ namespace Joked.Handlers
 	internal interface IJokesHandler
 	{
 		ICuratedJokes CurateJokes(JokeDto[] jokes, string term, bool shouldEmphasize);
-		JokesDto GetJokes(string term, int limit);
+		Task<JokesDto> GetJokes(string term, int limit);
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System.Net.Http;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Joked.Controllers;
 using Joked.Handlers;
@@ -29,14 +30,14 @@ namespace Joked.Test.Controllers
 
 			var jokesController = new JokesController(jokeHttpClient,logger,jokeHandler);
 
-			var x = jokesController.GetJokes("a",true,limit,false);
+			var result = jokesController.GetJokes("a",true,limit,false).Result;
 
-			TotalCuratedJokes(x).Should().Be(limit); 
+			TotalCuratedJokes(result).Should().Be(limit); 
 		}
 
-		private static int TotalCuratedJokes(ActionResult<ICuratedJokes> x)
+		private static int TotalCuratedJokes(ActionResult<ICuratedJokes> result)
 		{
-			return x.Value.Long.Count + x.Value.Medium.Count + x.Value.Short.Count;
+			return result.Value.Long.Count + result.Value.Medium.Count + result.Value.Short.Count;
 		}
 
 		[SetUp]

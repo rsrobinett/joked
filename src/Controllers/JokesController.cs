@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
+using System.Threading.Tasks;
 using Joked.Handlers;
 using Joked.Model;
 using Microsoft.AspNetCore.Http;
@@ -40,7 +40,7 @@ namespace Joked.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		[ProducesResponseType(StatusCodes.Status501NotImplemented)]
-		public ActionResult<ICuratedJokes> GetJokes([FromQuery] string term, [FromQuery] bool curate = true, [FromQuery] int limit = 30, [FromQuery] bool emphasize = false)
+		public async Task<ActionResult<ICuratedJokes>> GetJokes([FromQuery] string term, [FromQuery] bool curate = true, [FromQuery] int limit = 30, [FromQuery] bool emphasize = false)
 		{
 			var (result, isValid) = ValidateRequest(term, curate);
 			if (!isValid)
@@ -50,8 +50,8 @@ namespace Joked.Controllers
 
 			try
 			{
-				var jokes = _jokesHandler.GetJokes(term, limit);
-				var ensureLimit = jokes?.Jokes?.Take(limit).ToArray();
+				var jokes = await _jokesHandler.GetJokes(term, limit);
+				var ensureLimit = jokes.Jokes?.Take(limit).ToArray();
 				var curatedJokes = _jokesHandler.CurateJokes(ensureLimit, term, emphasize);
 
 				return Ok(curatedJokes);

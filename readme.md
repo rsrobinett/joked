@@ -55,8 +55,9 @@ dotnet test
   * What is considered a word for counting?
     * Are numbers considered words?  For example, "There are 7 days in week."  Is "7" considered a word?
     * Is a grawlix (!@#$%) considered a word?  For example, in the phrase "To #*!! with good intentions!"  Is " #*!!"  considered to be a word?
-    * Are words with an emphasis dash (--)  in the middle considered 2 words? For example, "One thing's for sure--Degreed is a great place to work."  In this example, is "sure--Degreed" 2 words or 1?
-    * Are groups of letters with punctuation in the middle other than an emphasis dash considered 1 word?  For example, is "www.degreed.com" 1 word; and in the phrase "I enjoy a good pick-me-up first thing in the morning" is the string "pick-me-up" one word?      * Are Groups of the same punctuation a word? For example,  !!! and ... .
+    * Are words with an emphasis dash (--)  in the middle considered 2 words? For example, "One thing's for sure--it is a great place to work."  In this example, is "sure--it" 2 words or 1?
+    * Are groups of letters with punctuation in the middle other than an emphasis dash considered 1 word?  For example, is "www.google.com" 1 word; and in the phrase "I enjoy a good pick-me-up first thing in the morning" is the string "pick-me-up" one word?      
+	* Are Groups of the same punctuation a word? For example,  !!! and ... .
   * How should I handle search terms with multiple words? 
     * The simple implementation is only replace the full string and this fulfills the requirement, but if seems that it is not helpful as searching for "ice cream" will return words with just cream and just ice.  None of these will be emphasized because it only empasizes exact strings. 
     * The ideal emphasis algorithm would emphasize all the words that resulted in the joke being included in the query. This algorithm is much more complicated and tricky to follow as it gets down to the char level. 
